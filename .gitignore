@@ -1,0 +1,12 @@
+*.csv
+*.zip
+.terraform
+terraform.*
+file-upload-service-account.json
+service-account.json
+__pycache__
+partition*.csv
+job*.yml
+.env/
+gcs-sa.json
+secret.yml
