@@ -1,0 +1,164 @@
+kind: Service
+apiVersion: v1
+metadata:
+ name: geocoder
+spec:
+ type: ClusterIP
+ ports:
+ - port: 80
+   targetPort: 6080
+---
+kind: Endpoints
+apiVersion: v1
+metadata:
+ name: geocoder
+ annotations:
+subsets:
+ - addresses:
+     - ip: 10.128.0.2 #Internal IP of ArcGIS Server with geocoders
+   ports:
+     - port: 6080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapi-api
+  labels:
+    app: api
+    tier: backend
+    version: 1.0.0
+spec:
+  type: NodePort
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 1337
+  selector:
+    app: api
+    tier: backend
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: neg-webapi
+spec:
+  backend:
+    serviceName: webapi-api # Name of the Service targeted by the Ingress
+    servicePort: 80 # Should match the port used by the Service
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapi-api
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: api
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: api
+        tier: backend
+        version: 1.0.0
+    spec:
+      volumes:
+      - name: appsettings-config
+        configMap:
+          name: app-config
+      containers:
+      - name: webapi-api
+        image: gcr.io/agrc-204220/webapi/api
+        imagePullPolicy: Always
+        volumeMounts:
+        - name: appsettings-config
+          mountPath: /app/appsettings.json
+          subPath: appsettings.json
+        env:
+        - name: WEBAPI__ARCGIS__HOST
+          value: geocoder
+        - name: WEBAPI__ARCGIS__PORT
+          value: '6080'
+        - name: WEBAPI__ARCGIS__GEOMETRY_SERVICE__PATH
+          value: arcgis/rest/services/Geometry/GeometryServer
+        - name: ASPNETCORE_URLS
+          value: http://+:1337
+        - name: ASPNETCORE_ENVIRONMENT
+          value: Development
+        ports:
+        - containerPort: 1337
+        readinessProbe:
+            httpGet:
+                path: /
+                port: 1337
+            initialDelaySeconds: 35
+            periodSeconds: 10
+        livenessProbe:
+            httpGet:
+                path: /
+                port: 1337
+            initialDelaySeconds: 36
+            periodSeconds: 15
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: db
+  labels:
+    app: postgres
+    tier: backend
+spec:
+  ports:
+  - port: 5432
+  selector:
+    app: postgres
+    tier: backend
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: db
+spec:
+  selector:
+    matchLabels:
+      app: postgres
+      tier: backend
+  template:
+    metadata:
+      labels:
+        app: postgres
+        tier: backend
+        version: 1.0.0
+    spec:
+      containers:
+      - name: db
+        image: gcr.io/agrc-204220/webapi/db
+        imagePullPolicy: Always
+        env:
+        - name: POSTGRES_DB
+          value: webapi
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: what password
+        volumeMounts:
+        - name: data
+          mountPath: /var/lib/postgresql/data
+          subPath: data
+      volumes:
+      - name: data
+        persistentVolumeClaim:
+          claimName: data
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: data
+  annotations:
+    volume.alpha.kubernetes.io/storage-class: default
+spec:
+  accessModes: [ReadWriteOnce]
+  resources:
+    requests:
+      storage: 10Gi

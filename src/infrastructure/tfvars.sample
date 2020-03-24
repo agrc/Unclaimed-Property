@@ -1,0 +1,3 @@
+project_id = ""
+boot_image = ""
+agrc_cidrs = [""]
