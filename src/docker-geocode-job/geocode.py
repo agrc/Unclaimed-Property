@@ -6,7 +6,7 @@ Cloud Geocoding
 Usage:
   geocode.py geocode <input_csv>
     (--from-bucket=bucket --output-bucket=output)
-    [--api-key=key --street-field=street --zone-field=zone --id-field=id --testing=test]
+    [--api-key=key --street-field=street --zone-field=zone --id-field=id --testing=test, --ignore-failure=failures]
 
 Options:
   <input_csv>               The name of the csv inside the --from-bucket
@@ -17,6 +17,7 @@ Options:
   --id-field=id             The field containing a unique id to zip the results back together [default: id]
   --api-key=key             The validation key [default: AGRC-Explorer]
   --testing=test            Trick the tool to not use google data and from and to become file paths [default: false]
+  --ignore-failure=failures Ignore the failure threshold. Useful when trying to geocode garbage data [default: false]
 '''
 import csv
 import logging
@@ -173,7 +174,7 @@ def execute_job(data, options):
             if options['--testing'].lower() == 'true' and total > 50:
                 return 'result.csv'
 
-            if sequential_fails > 25:
+            if options['--ignore-failure'].lower() != 'true' and sequential_fails > 25:
                 logging.warning('passed continuous fail threshold. failing entire job.')
 
                 return None
