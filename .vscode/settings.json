@@ -6,8 +6,10 @@
     "python.linting.enabled": true,
     "cSpell.words": [
         "cidrs",
+        "dropna",
         "geocoder",
         "geocoders",
+        "inplace",
         "kubernetes",
         "postgresql",
         "reindex",
