@@ -29,6 +29,10 @@ IDENTITY = [{
     'table': 'parcels_utah',
     'fields': ['ownername'],
     'rename': ['owner_name']
+}, {
+    'table': 'countyboundaries',
+    'fields': ['name'],
+    'rename': ['county_name']
 }]
 
 def main():
