@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # * coding: utf8 *
-'''
+"""
 Point Extraction
 
 Usage:
@@ -8,7 +8,7 @@ Usage:
 
 Options:
 	--as=name          the new name of the csv outputs [default: job]
-'''
+"""
 import csv
 from pathlib import Path
 
@@ -33,9 +33,16 @@ IDENTITY = [{
     'table': 'countyboundaries',
     'fields': ['name'],
     'rename': ['county_name']
+}, {
+    'table': 'census_tracts_2010',
+    'fields': ['geoid10'],
+    'rename': ['census_id']
 }]
 
+
 def main():
+    """the main entry point for the script
+    """
     args = docopt(__doc__, version='point data extraction cli v1.0.0')
 
     table = args['<csv>']
@@ -48,21 +55,37 @@ def main():
 
 
 def extract(table, table_name):
+    """extracts data from the identity tables
+    """
     print(f'1. creating points from csv as {table_name}')
 
     if not arcpy.Exists(f'{table_name}_step_1'):
-        arcpy.management.MakeXYEventLayer(table=table, in_x_field='x', in_y_field='y', out_layer=f'{table_name}_temp', spatial_reference=UTM, in_z_field=None)
+        arcpy.management.MakeXYEventLayer(
+            table=table,
+            in_x_field='x',
+            in_y_field='y',
+            out_layer=f'{table_name}_temp',
+            spatial_reference=UTM,
+            in_z_field=None
+        )
 
     print('   creating feature class')
 
     if not arcpy.Exists(f'{table_name}_step_1'):
         arcpy.management.XYTableToPoint(
-            in_table=f'{table_name}_temp', out_feature_class=f'{table_name}_step_1', x_field='x', y_field='y', z_field=None, coordinate_system=UTM
+            in_table=f'{table_name}_temp',
+            out_feature_class=f'{table_name}_step_1',
+            x_field='x',
+            y_field='y',
+            z_field=None,
+            coordinate_system=UTM
         )
 
     print('   selecting match addresses')
 
-    arcpy.management.SelectLayerByAttribute(in_layer_or_view=f'{table_name}_step_1', selection_type='NEW_SELECTION', where_clause='message IS NULL')
+    arcpy.management.SelectLayerByAttribute(
+        in_layer_or_view=f'{table_name}_step_1', selection_type='NEW_SELECTION', where_clause='message IS NULL'
+    )
 
     print('   separating matched addresses')
 
@@ -102,7 +125,12 @@ def extract(table, table_name):
             if not field.lower() in job_fields:
                 continue
 
-            arcpy.management.AlterField(in_table=f'{table_name}_step_{step + 1}', field=field, new_field_name=identity['rename'][i])
+            arcpy.management.AlterField(
+                in_table=f'{table_name}_step_{step + 1}',
+                field=field,
+                new_field_name=identity['rename'][i],
+                new_field_alias=identity['rename'][i]
+            )
 
         step = step + 1
 
@@ -110,21 +138,31 @@ def extract(table, table_name):
 
 
 def prepare_output(table):
+    """prepares the output but splitting the primary key and the other field
+    """
     print('adding type field')
 
     arcpy.management.AddField(str(Path(arcpy.env.workspace).joinpath(table)), 'type', 'TEXT', '', '', '1')
 
     print('splitting type and id')
-    arcpy.management.CalculateField(in_table=table, field='type', expression='left($feature.primary_key, 1)', expression_type='ARCADE')
+    arcpy.management.CalculateField(
+        in_table=table, field='type', expression='left($feature.primary_key, 1)', expression_type='ARCADE'
+    )
 
-    arcpy.management.CalculateField(in_table=table, field='primary_key', expression='mid($feature.primary_key, 1, 20)', expression_type='ARCADE')
+    arcpy.management.CalculateField(
+        in_table=table, field='primary_key', expression='mid($feature.primary_key, 1, 20)', expression_type='ARCADE'
+    )
 
 
 def convert_to_csv(table):
+    """writes table to csv
+    """
     print('writing to csv')
 
     with arcpy.da.SearchCursor(
-        in_table=table, field_names=['type', 'primary_key', 'senate_district', 'house_district', 'owner_name'], where_clause='message is null'
+        in_table=table,
+        field_names=['type', 'primary_key', 'senate_district', 'house_district', 'owner_name', 'census_id'],
+        where_clause='message is null'
     ) as cursor, open(f'{table}_result.csv', 'w', newline='') as result_file:
         writer = csv.writer(result_file, delimiter='|', quoting=csv.QUOTE_MINIMAL)
 
@@ -133,6 +171,8 @@ def convert_to_csv(table):
 
 
 def remove_temp_tables(table):
+    """clean up method
+    """
     temp_tables = sorted(arcpy.ListFeatureClasses(wild_card=f'{table[:-1]}*', feature_type='Point'))
 
     print('removing ', ', '.join(temp_tables[:-1]))
@@ -141,5 +181,5 @@ def remove_temp_tables(table):
 
 
 if __name__ == '__main__':
-    arcpy.env.workspace = 'enhance.gdb'
+    arcpy.env.workspace = '..\\..\\data\\enhanced\\enhance.gdb'
     main()
