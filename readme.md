@@ -104,3 +104,13 @@ To locally test the geocode.py try a command like
 ```sh
 python geocode.py geocode partition_7.csv --from-bucket=../../../data/partitioned --output-bucket=./ --testing=true
 ```
+
+## Post Process
+
+The `post-process/extract.py` file takes the partitioned result data and appends geographical data to it. Depending on the number of steps, you will end up with a `file_step_number_results.csv`. Execute from the `post-process` folder.
+
+```sh
+python extract.py enhance partition_5.csv --as=job_5
+```
+
+Zip all files and deliver
