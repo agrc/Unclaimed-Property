@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # * coding: utf8 *
-'''
+"""
 cloud-geocode
 
 Usage:
@@ -24,7 +24,7 @@ Arguments:
 --output-folder=output-folder           The place to store the post mortem issue csv's [default: ./../data/postmortem/]
 --unmatched=input-csv                   The path to the not-found.csv file generated from post-mortem or other intput [default: ./../data/postmortem/not-found.csv]
 --output-normalized=file-path           The place to store the normalized addresses [default: ./../data/postmortem/normalized.csv]
-'''
+"""
 
 import sys
 from pathlib import Path
@@ -38,8 +38,8 @@ from .upload import upload_files
 
 
 def main():
-    '''the main method to be called when the script is invoked
-    '''
+    """the main method to be called when the script is invoked
+    """
     args = docopt(__doc__, version='cloud geocoding cli v1.0.0')
 
     if args['create'] and args['partitions']:

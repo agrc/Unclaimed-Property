@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 # * coding: utf8 *
-'''
+"""
 mortem.py
 A module that sorts out why some geocodes failed
-'''
+"""
 
 import csv
 from glob import glob

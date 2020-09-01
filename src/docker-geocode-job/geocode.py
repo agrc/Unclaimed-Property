@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 # * coding: utf8 *
-'''
+"""
 Cloud Geocoding
 
 Usage:
@@ -18,7 +18,7 @@ Options:
   --api-key=key             The validation key [default: AGRC-Explorer]
   --testing=test            Trick the tool to not use google data and from and to become file paths [default: false]
   --ignore-failure=failures Ignore the failure threshold. Useful when trying to geocode garbage data [default: false]
-'''
+"""
 import csv
 import logging
 import random
@@ -49,8 +49,8 @@ def make_unique(name):
 
 
 def bring_job_data_local(bucket_name, source_blob_name, destination_file_name, testing):
-    '''Downloads a blob from the bucket
-    '''
+    """Downloads a blob from the bucket
+    """
     if testing.lower() == 'true':
         return str(Path(bucket_name).joinpath(source_blob_name))
 
@@ -71,8 +71,8 @@ def bring_job_data_local(bucket_name, source_blob_name, destination_file_name, t
 
 
 def store_job_results(bucket_name, source_file_name, destination_blob_name, testing):
-    '''Uploads a file to the bucket
-    '''
+    """Uploads a file to the bucket
+    """
     if testing.lower() == 'true':
         return source_file_name
 
@@ -95,8 +95,8 @@ def is_key_valid(key):
 
 
 def cleanse_address(data):
-    '''cleans up address garbage
-    '''
+    """cleans up address garbage
+    """
     replacement = ' '
     street = str(data).strip()
 
@@ -122,8 +122,8 @@ def cleanse_address(data):
 
 
 def cleanse_zone(data):
-    '''cleans up zone garbage
-    '''
+    """cleans up zone garbage
+    """
     zone = SPACES.sub(' ', str(data)).strip()
 
     if len(zone) > 0 and zone[0] == '8':
@@ -133,9 +133,9 @@ def cleanse_zone(data):
 
 
 def format_time(seconds):
-    '''seconds: number
+    """seconds: number
     returns a human-friendly string describing the amount of time
-    '''
+    """
     minute = 60.00
     hour = 60.00 * minute
 
@@ -152,8 +152,8 @@ def format_time(seconds):
 
 
 def execute_job(data, options):
-    '''loop over the csv data and geocode the rows
-    '''
+    """loop over the csv data and geocode the rows
+    """
     url_template = Template(f'http://{HOST}/api/v1/geocode/$street/$zone')
     sequential_fails = 0
     success = 0
@@ -233,8 +233,8 @@ def execute_job(data, options):
 
 
 def main():
-    '''the main method to be called when the script is invoked
-    '''
+    """the main method to be called when the script is invoked
+    """
     args = docopt(__doc__, version='cloud geocoding job v1.0.0')
     logging.info('starting job')
 
