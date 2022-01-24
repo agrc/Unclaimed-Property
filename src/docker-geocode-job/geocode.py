@@ -6,7 +6,7 @@ Cloud Geocoding
 Usage:
   geocode.py geocode <input_csv>
     (--from-bucket=bucket --output-bucket=output)
-    [--api-key=key --street-field=street --zone-field=zone --id-field=id --testing=test, --ignore-failure=failures]
+    [--street-field=street --zone-field=zone --id-field=id --testing=test, --ignore-failure=failures]
 
 Options:
   <input_csv>                    The name of the csv inside the --from-bucket
@@ -84,13 +84,6 @@ def store_job_results(bucket_name, source_file_name, destination_blob_name, test
     blob.upload_from_filename(source_file_name)
 
     logging.info('Upload %s complete', item)
-
-
-def is_key_valid(key):
-    if key:
-        return True
-
-    return False
 
 
 def cleanse_address(data):
@@ -188,9 +181,7 @@ def execute_job(data, options):
             time.sleep(random.uniform(RATE_LIMIT_SECONDS[0], RATE_LIMIT_SECONDS[1]))
 
             try:
-                request = requests.get(url, timeout=5, params={
-                    'apiKey': options['--api-key']
-                })
+                request = requests.get(url, timeout=5)
 
                 response = request.json()
 
@@ -237,8 +228,6 @@ def main():
     args = docopt(__doc__, version='cloud geocoding job v1.0.0')
     logging.info('starting job')
 
-    if not is_key_valid(args['--api-key']):
-        logging.info("Api key check failed")
 
     job_data = bring_job_data_local(args['--from-bucket'], args['<input_csv>'], 'job.csv', args['--testing'])
 
