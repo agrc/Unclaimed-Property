@@ -191,7 +191,7 @@ def convert_to_csv(table):
 
     with arcpy.da.SearchCursor(
         in_table=table,
-        field_names=['type', 'primary_key', 'senate_district', 'house_district', 'owner_name', 'census_id'],
+        field_names=['type', 'primary_key', 'county_name', 'senate_district', 'house_district', 'census_id'],
         where_clause='message is null'
     ) as cursor, open(f'{table}_result.csv', 'w', newline='') as result_file:
         writer = csv.writer(result_file, delimiter='|', quoting=csv.QUOTE_MINIMAL)
