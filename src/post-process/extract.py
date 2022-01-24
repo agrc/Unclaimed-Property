@@ -181,5 +181,12 @@ def remove_temp_tables(table):
 
 
 if __name__ == '__main__':
-    arcpy.env.workspace = '..\\..\\data\\enhanced\\enhance.gdb'
+    gdb = str(Path('..\\..\\data\\enhanced\\enhance.gdb').absolute())
+    print(gdb)
+
+    if not arcpy.Exists(gdb):
+        raise Exception('The enhancement geodatabase was not found. Run this command from the post-process folder.')
+
+    arcpy.env.workspace = gdb
+
     main()
