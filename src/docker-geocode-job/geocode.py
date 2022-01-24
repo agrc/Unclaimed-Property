@@ -21,8 +21,6 @@ Options:
 import csv
 import logging
 import re
-import sys
-import time
 import uuid
 from pathlib import Path
 from string import Template
@@ -206,14 +204,22 @@ def execute_job(data, options):
                 fail += 1
                 total += 1
 
+                logging.info(ex)
+
                 writer.writerow((primary_key, street, zone, 0, 0, 0, str(ex)[:500]))
 
-            if total % 10000 == 0:
-                logging.info('Total requests: %s failure rate: %.2f%% average score: %d time taken: %s', total, (100 * fail / total), score / success, format_time(perf_counter() - start))
+            if total % 1000 == 0:
+                logging.info(
+                    'Total requests: %s failure rate: %.2f%% time taken: %s', total, (100 * fail / total),
+                    format_time(perf_counter() - start)
+                )
                 start = perf_counter()
 
         logging.info('Job Completed')
-        logging.info('Total requests: %s failure rate: %.2f%% average score: %d time taken: %s', total, (100 * fail / total), score / success, format_time(perf_counter() - start))
+        logging.info(
+            'Total requests: %s failure rate: %.2f%% average score: %d time taken: %s', total, (100 * fail / total),
+            score / success, format_time(perf_counter() - start)
+        )
 
     return 'result.csv'
 
@@ -221,9 +227,8 @@ def execute_job(data, options):
 def main():
     """the main method to be called when the script is invoked
     """
-    args = docopt(__doc__, version='cloud geocoding job v1.0.0')
-    logging.info('starting job')
-
+    args = docopt(__doc__, version='cloud geocoding job v1.0.1')
+    logging.info('starting job v1.0.1')
 
     job_data = bring_job_data_local(args['--from-bucket'], args['<input_csv>'], 'job.csv', args['--testing'])
 
