@@ -1,11 +1,16 @@
 {
     "python.formatting.provider": "yapf",
-    "python.formatting.yapfArgs": ["--style", "${workspaceRoot}/setup.cfg"],
+    "python.formatting.yapfArgs": [
+        "--style",
+        "${workspaceRoot}/setup.cfg"
+    ],
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
     "cSpell.words": [
         "agrc",
+        "arcpy",
         "cidrs",
+        "conda",
         "dropna",
         "geocode",
         "geocoder",
@@ -16,5 +21,6 @@
         "reindex",
         "tfvars",
         "webapi"
-    ]
+    ],
+    "python.pythonPath": "C:\\Users\\sgourley\\AppData\\Local\\ESRI\\conda\\envs\\cloud-geocoding\\python.exe"
 }
