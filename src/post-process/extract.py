@@ -34,8 +34,8 @@ IDENTITY = [{
     'fields': ['name'],
     'rename': ['county_name']
 }, {
-    'table': 'census_tracts_2010',
-    'fields': ['geoid10'],
+    'table': 'census_tracts_2020',
+    'fields': ['geoid20'],
     'rename': ['census_id']
 }]
 
