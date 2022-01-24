@@ -20,7 +20,6 @@ Options:
 """
 import csv
 import logging
-import random
 import re
 import sys
 import time
@@ -38,7 +37,6 @@ CLIENT = google.cloud.logging.Client()
 CLIENT.setup_logging()
 
 SPACES = re.compile(r'(\s\d/\d\s)|/|(\s#.*)|%|(\.\s)|\?')
-RATE_LIMIT_SECONDS = (0.015, 0.03)
 HOST = 'webapi-api'
 HEADER = ('primary_key', 'input_address', 'input_zone', 'score', 'x', 'y', 'message')
 
@@ -177,8 +175,6 @@ def execute_job(data, options):
             url = url_template.substitute({'street': street, 'zone': zone})
 
             primary_key = row[options['--id-field']]
-
-            time.sleep(random.uniform(RATE_LIMIT_SECONDS[0], RATE_LIMIT_SECONDS[1]))
 
             try:
                 request = requests.get(url, timeout=5)
