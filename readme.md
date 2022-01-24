@@ -5,9 +5,9 @@
 1. Create a `terraform.tfvars` file from the `tfvars.sample` and fill out the values
 1. Make sure the `prod.tfvars` has the most current [boot image](https://console.cloud.google.com/compute/images).
 
-  ```tf
-    boot_image = "cloud-geocoding-v1-0-0
-  ```
+```tf
+  boot_image = "cloud-geocoding-v1-0-0
+```
 
 1. With `src/infrastructure` as your current working directory, run `terraform apply` to create the cloud infrastructure. If this is the first run, execute `terraform init` to download the terraform dependencies. The terraform output will print the private ip.
 1. Update `infrastructure/deployment.yml` with the private/internal ip address of the compute vm created above. If it is different than what is in your `deployment.yml`, run `terraform apply` again to correct the kubernetes cluster.
@@ -96,8 +96,8 @@ The geocoding job docker image installs the geocode.py file into the container a
 Any time the `geocode.py` file is modified or you want to update the python dependencies, the docker image needs to be rebuilt and pushed to gcr. With `src/docker-geocode-job` as your current working directory...
 
 1. `docker build . --tag webapi/geocode-job`
-1. `docker tag webapi/geocode-job:latest gcr.io/agrc-204220/webapi/geocode-job:latest`
-1. `docker push gcr.io/agrc-204220/webapi/geocode-job:latest`
+1. `docker tag webapi/geocode-job:latest gcr.io/ut-dts-agrc-geocoding-dev/api.mapserv.utah.gov/geocode-job:latest`
+1. `docker push gcr.io/ut-dts-agrc-geocoding-dev/api.mapserv.utah.gov/geocode-job:latest`
 
 To locally test the geocode.py try a command like
 
