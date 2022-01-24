@@ -9,15 +9,14 @@ Usage:
     [--api-key=key --street-field=street --zone-field=zone --id-field=id --testing=test, --ignore-failure=failures]
 
 Options:
-  <input_csv>               The name of the csv inside the --from-bucket
-  --from-bucket=bucket      The bucket to find the <input_csv>
-  --output-bucket=output    The bucket to save the results to
-  --street-field=field      The field name containing the street address [default: address]
-  --zone-field=zone         The field containing the zip code or city name [default: zone]
-  --id-field=id             The field containing a unique id to zip the results back together [default: id]
-  --api-key=key             The validation key [default: AGRC-Explorer]
-  --testing=test            Trick the tool to not use google data and from and to become file paths [default: false]
-  --ignore-failure=failures Ignore the failure threshold. Useful when trying to geocode garbage data [default: false]
+  <input_csv>                    The name of the csv inside the --from-bucket
+  --from-bucket=bucket           The bucket to find the <input_csv>
+  --output-bucket=output         The bucket to save the results to
+  --street-field=field           The field name containing the street address [default: address]
+  --zone-field=zone              The field containing the zip code or city name [default: zone]
+  --id-field=id                  The field containing a unique id to zip the results back together [default: id]
+  --testing=test                 Trick the tool to not use google data and from and to become file paths [default: false]
+  --ignore-failure=failures      Ignore the failure threshold. Useful when trying to geocode garbage data [default: false]
 """
 import csv
 import logging
