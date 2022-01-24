@@ -19,7 +19,7 @@ Arguments:
 --separator=sep                         The csv file field separator [default: ,]
 --column-names=names                    An array of the column names in the csv
 --input-folder=upload-folder            The parent folder path containting the csv files to upload to a bucket [default: ../data/partitioned]
---bucket=bucket                         The google cloud bucket to upload the files to [default: geocoder-csv-storage-95728]
+--bucket=bucket                         The google cloud bucket to upload the files to [default: ut-dts-agrc-geocoding-dev-source]
 --result-folder=input-folder            The input folder containing csv files [default: ./../data/results]
 --output-folder=output-folder           The place to store the post mortem issue csv's [default: ./../data/postmortem/]
 --unmatched=input-csv                   The path to the not-found.csv file generated from post-mortem or other intput [default: ./../data/postmortem/not-found.csv]
@@ -43,7 +43,10 @@ def main():
     args = docopt(__doc__, version='cloud geocoding cli v1.0.0')
 
     if args['create'] and args['partitions']:
-        create_partitions(args['--input-csv'], args['--output-partitions'], int(args['--chunk-size']), args['--separator'], args['--column-names'])
+        create_partitions(
+            args['--input-csv'], args['--output-partitions'], int(args['--chunk-size']), args['--separator'],
+            args['--column-names']
+        )
 
         return
 

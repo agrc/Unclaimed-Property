@@ -38,7 +38,7 @@ spec:
           requests:
             cpu: "50m"
             memory: "50Mi"
-        image: gcr.io/agrc-204220/webapi/geocode-job
+        image: gcr.io/ut-dts-agrc-geocoding-dev/api.mapserv.utah.gov/geocode-job
         imagePullPolicy: Always
         volumeMounts:
         - name: cloud-storage-key
@@ -78,8 +78,8 @@ def create_jobs(input_path, output_path):
             yml.write(
                 JOB_TEMPLATE.substitute({
                     'job_number': i,
-                    'upload_bucket': 'geocoder-csv-storage-95728',
-                    'results_bucket': 'geocoder-csv-results-98576',
+                    'upload_bucket': 'ut-dts-agrc-geocoding-dev-source',
+                    'results_bucket': 'ut-dts-agrc-geocoding-dev-result',
                     'csv_name': f'partition_{i}.csv',
                     'id_field': 'id',
                     'address_field': 'address',
