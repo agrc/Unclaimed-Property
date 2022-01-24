@@ -11,6 +11,7 @@ Options:
 """
 import csv
 from pathlib import Path
+from timeit import default_timer
 
 from docopt import docopt
 
@@ -44,10 +45,19 @@ def main():
     table = args['<csv>']
     table_name = args['--as']
 
+    start = default_timer()
     job = extract(table, table_name)
+    print(f'extract job took {default_timer() - start} seconds')
+    prepare = default_timer()
     prepare_output(job)
+    print(f'prepare output took {default_timer() - prepare} seconds')
+    convert = default_timer()
     convert_to_csv(job)
+    print(f'convert to csv took {default_timer() - convert} seconds')
+    remove = default_timer()
     remove_temp_tables(job)
+    print(f'remove temp tables took {default_timer() - remove} seconds')
+    print(f'finished in {default_timer() - start} seconds')
 
 
 def extract(table, table_name):
@@ -64,6 +74,8 @@ def extract(table, table_name):
             spatial_reference=UTM,
             in_z_field=None
         )
+    else:
+        print('    skipping')
 
     print('   creating feature class')
 
@@ -76,19 +88,28 @@ def extract(table, table_name):
             z_field=None,
             coordinate_system=UTM
         )
+    else:
+        print('    skipping')
 
     print('   selecting match addresses')
 
-    arcpy.management.SelectLayerByAttribute(
-        in_layer_or_view=f'{table_name}_step_1', selection_type='NEW_SELECTION', where_clause='message IS NULL'
-    )
+    if not arcpy.Exists(f'{table_name}_step_2'):
+        arcpy.management.SelectLayerByAttribute(
+            in_layer_or_view=f'{table_name}_step_1', selection_type='NEW_SELECTION', where_clause='message IS NULL'
+        )
+    else:
+        print('    skipping')
 
     print('   separating matched addresses')
 
-    arcpy.management.CopyFeatures(in_features=f'{table_name}_step_1', out_feature_class=f'{table_name}_step_2')
+    if not arcpy.Exists(f'{table_name}_step_2'):
+        arcpy.management.CopyFeatures(in_features=f'{table_name}_step_1', out_feature_class=f'{table_name}_step_2')
+    else:
+        print('    skipping')
 
     step = 2
     for identity in IDENTITY:
+        start = default_timer()
         print('{}. enhancing data with {} from {}'.format(step, "'".join(identity['fields']), identity['table']))
 
         if not arcpy.Exists(f'{table_name}_step_{step + 1}'):
@@ -100,6 +121,11 @@ def extract(table, table_name):
                 cluster_tolerance=None,
                 relationship='NO_RELATIONSHIPS'
             )
+        else:
+            print('    skipping')
+            step = step + 1
+
+            continue
 
         metadata = arcpy.da.Describe(identity['table'])
         job_metadata = arcpy.da.Describe(f'{table_name}_step_{step + 1}')
@@ -129,6 +155,7 @@ def extract(table, table_name):
             )
 
         step = step + 1
+        print(f'completed: {default_timer() - start}')
 
     return f'{table_name}_step_{step}'
 
@@ -138,7 +165,14 @@ def prepare_output(table):
     """
     print('adding type field')
 
-    arcpy.management.AddField(str(Path(arcpy.env.workspace).joinpath(table)), 'type', 'TEXT', '', '', '1')
+    absolute_table = str(Path(arcpy.env.workspace).joinpath(table))
+
+    fields = arcpy.ListFields(absolute_table)
+    if 'type' in [field.name.lower() for field in fields]:
+        print('    skipping')
+        return
+
+    arcpy.management.AddField(absolute_table, 'type', 'TEXT', '', '', '1')
 
     print('splitting type and id')
     arcpy.management.CalculateField(
@@ -153,7 +187,7 @@ def prepare_output(table):
 def convert_to_csv(table):
     """writes table to csv
     """
-    print('writing to csv')
+    print(f'writing {table} to csv')
 
     with arcpy.da.SearchCursor(
         in_table=table,
