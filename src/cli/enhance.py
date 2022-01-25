@@ -134,8 +134,15 @@ def filter_mapping(mapping, fields, table_metadata):
     for field in fields:
         index = mapping.findFieldMapIndex(field.name)
 
+        if index == -1:
+            continue
+
         if field.name.lower() not in table_metadata['fields']:
-            mapping.removeFieldMap(index)
+            try:
+                mapping.removeFieldMap(index)
+            except Exception as ex:
+                print(field.name.lower())
+                raise ex
         else:
             if field.name.lower() == 'shape':
                 continue
