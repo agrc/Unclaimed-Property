@@ -4,12 +4,12 @@
 cloud-geocode
 
 Usage:
-    cloud-geocode create partitions --input-csv=input-csv [--output-partitions=output-partitions --chunk-size=size --separator=sep --column-names=names...]
-    cloud-geocode create jobs [--input-jobs=input-jobs --output-jobs=output-jobs]
-    cloud-geocode upload [--bucket=bucket --input-folder=upload-folder]
-    cloud-geocode create enhancement-gdb [--output-gdb-folder=output-gdb]
-    cloud-geocode post-mortem [--result-folder=input-folder --separator=sep --output-folder=output-folder]
-    cloud-geocode post-mortem normalize [--unmatched=input-csv --output-normalized=file-path]
+    cli create partitions --input-csv=input-csv [--output-partitions=output-partitions --chunk-size=size --separator=sep --column-names=names...]
+    cli create jobs [--input-jobs=input-jobs --output-jobs=output-jobs]
+    cli upload [--bucket=bucket --input-folder=upload-folder]
+    cli create enhancement-gdb [--output-gdb-folder=output-gdb]
+    cli post-mortem [--result-folder=input-folder --separator=sep --output-folder=output-folder]
+    cli post-mortem normalize [--unmatched=input-csv --output-normalized=file-path]
 
 Arguments:
 --input-jobs=input-jobs                 The parent folder path to the partitioned csv files [default: ./../data/partitioned]
@@ -25,7 +25,7 @@ Arguments:
 --output-folder=output-folder           The place to store the post mortem issue csv's [default: ./../data/postmortem/]
 --unmatched=input-csv                   The path to the not-found.csv file generated from post-mortem or other intput [default: ./../data/postmortem/not-found.csv]
 --output-normalized=file-path           The place to store the normalized addresses [default: ./../data/postmortem/normalized.csv]
---output-gdb=output-gdb-folder          The parent directory of the file geodatabase containing the enhancement layers [default: ./../data/enhanced]
+--output-gdb-folder=output-gdb          The parent directory of the file geodatabase containing the enhancement layers [default: ./../data/enhanced]
 """
 
 import sys
@@ -59,7 +59,7 @@ def main():
         return
 
     if args['create'] and args['enhancement-gdb']:
-        create_enhancement_gdb(args['--output-gdb'])
+        create_enhancement_gdb(args['--output-gdb-folder'])
 
         return
 
