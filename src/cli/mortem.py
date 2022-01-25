@@ -12,6 +12,7 @@ import pandas as pd
 
 from sweeper.address_parser import Address
 
+
 def process_file(input_data, output_folder, separator):
     index, input_data = input_data
 
@@ -28,23 +29,52 @@ def process_file(input_data, output_folder, separator):
     output = Path(output_folder)
     output.mkdir(exist_ok=True)
 
-    with open(str(output.joinpath('all-errors.csv')), 'a') as output_file:
-        data.to_csv(output_file, header=header, index=False, sep=',', quoting=csv.QUOTE_MINIMAL, escapechar="\\")
+    data.to_csv(
+        output / 'all-errors.csv',
+        encoding='utf-8',
+        header=header,
+        index=False,
+        sep=',',
+        quoting=csv.QUOTE_MINIMAL,
+        escapechar="\\"
+    )
 
-    unmatched = data[data['message'].str.contains('No address candidates found with a score of 70 or better.', na=False)]
-    with open(str(output.joinpath('not-found.csv')), 'a') as output_file:
-        unmatched.to_csv(output_file, header=header, index=False, sep=',', quoting=csv.QUOTE_MINIMAL, escapechar="\\")
+    unmatched = data[
+        data['message'].str.contains('No address candidates found with a score of 70 or better.', na=False)]
 
-    data = data.query('not message == "No address candidates found with a score of 70 or better." and not message.isnull()')
+    unmatched.to_csv(
+        output / 'not-found.csv',
+        encoding='utf-8',
+        header=header,
+        index=False,
+        sep=',',
+        quoting=csv.QUOTE_MINIMAL,
+        escapechar="\\"
+    )
+
     api_issues = data[~data['message'].str.contains('Expecting value', na=False)]
 
-    with open(str(output.joinpath('api-errors.csv')), 'a') as output_file:
-        api_issues.to_csv(output_file, header=header, index=False, sep=',', quoting=csv.QUOTE_MINIMAL, escapechar="\\")
+    api_issues.to_csv(
+        output / 'api-errors.csv',
+        encoding='utf-8',
+        header=header,
+        index=False,
+        sep=',',
+        quoting=csv.QUOTE_MINIMAL,
+        escapechar="\\"
+    )
 
     incomplete = data[data['message'].str.contains('Expecting value', na=False)]
 
-    with open(str(output.joinpath('incomplete-errors.csv')), 'a') as output_file:
-        incomplete.to_csv(output_file, header=header, index=False, sep=',', quoting=csv.QUOTE_MINIMAL, escapechar="\\")
+    incomplete.to_csv(
+        output / 'incomplete-errors.csv',
+        header=header,
+        encoding='utf-8',
+        index=False,
+        sep=',',
+        quoting=csv.QUOTE_MINIMAL,
+        escapechar="\\"
+    )
 
     return {
         'total': total,
@@ -87,12 +117,8 @@ def try_standardize_unmatched(input_csv, output_file):
                 return None
 
             parts = [
-                address.address_number,
-                address.address_number_suffix,
-                address.prefix_direction,
-                address.street_name,
-                address.street_type,
-                address.street_direction
+                address.address_number, address.address_number_suffix, address.prefix_direction, address.street_name,
+                address.street_type, address.street_direction
             ]
 
             normalized = ' '.join([part for part in parts if part is not None])
