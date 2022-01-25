@@ -8,6 +8,8 @@ Usage:
     cli create jobs [--input-jobs=input-jobs --output-jobs=output-jobs]
     cli upload [--bucket=bucket --input-folder=upload-folder]
     cli create enhancement-gdb [--output-gdb-folder=output-gdb]
+    cli enhance [--csv-folder=geocoded-results]
+    cli merge [--final-folder=final-folder]
     cli post-mortem [--result-folder=input-folder --separator=sep --output-folder=output-folder]
     cli post-mortem normalize [--unmatched=input-csv --output-normalized=file-path]
 
@@ -26,6 +28,8 @@ Arguments:
 --unmatched=input-csv                   The path to the not-found.csv file generated from post-mortem or other intput [default: ./../data/postmortem/not-found.csv]
 --output-normalized=file-path           The place to store the normalized addresses [default: ./../data/postmortem/normalized.csv]
 --output-gdb-folder=output-gdb          The parent directory of the file geodatabase containing the enhancement layers [default: ./../data/enhanced]
+--csv-folder=geocoded-results           The parent directory of the geocoded files to enhanced [default: ./../data/geocoded-results]
+--final-folder=final-folder            The parent directory of the enhanced csv files [default: ./../data/results]
 """
 
 import sys
@@ -37,7 +41,7 @@ from .jobs import create_jobs
 from .mortem import mortem, try_standardize_unmatched
 from .partition import create_partitions
 from .upload import upload_files
-from .enhance import create_enhancement_gdb
+from .enhance import create_enhancement_gdb, enhance, merge
 
 
 def main():
@@ -70,6 +74,14 @@ def main():
             upload_files(str(path), args['--bucket'])
 
         return
+
+    if args['enhance']:
+        enhance(args['--csv-folder'])
+
+        return
+
+    if args['merge']:
+        merge(args['--final-folder'])
 
     if args['post-mortem']:
         if args['normalize']:
