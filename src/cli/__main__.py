@@ -23,13 +23,13 @@ Arguments:
 --column-names=names                    An array of the column names in the csv
 --input-folder=upload-folder            The parent folder path containting the csv files to upload to a bucket [default: ../data/partitioned]
 --bucket=bucket                         The google cloud bucket to upload the files to [default: ut-dts-agrc-geocoding-dev-source]
---result-folder=input-folder            The input folder containing csv files [default: ./../data/results]
+--result-folder=input-folder            The input folder containing csv files [default: ./../data/geocoded-results]
 --output-folder=output-folder           The place to store the post mortem issue csv's [default: ./../data/postmortem/]
 --unmatched=input-csv                   The path to the not-found.csv file generated from post-mortem or other intput [default: ./../data/postmortem/not-found.csv]
 --output-normalized=file-path           The place to store the normalized addresses [default: ./../data/postmortem/normalized.csv]
 --output-gdb-folder=output-gdb          The parent directory of the file geodatabase containing the enhancement layers [default: ./../data/enhanced]
 --csv-folder=geocoded-results           The parent directory of the geocoded files to enhanced [default: ./../data/geocoded-results]
---final-folder=final-folder            The parent directory of the enhanced csv files [default: ./../data/results]
+--final-folder=final-folder             The parent directory of the enhanced csv files [default: ./../data/results]
 """
 
 import sys
