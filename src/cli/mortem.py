@@ -6,7 +6,6 @@ A module that sorts out why some geocodes failed
 """
 
 import csv
-from glob import glob
 from pathlib import Path
 
 import pandas as pd
@@ -64,16 +63,8 @@ def _sum_key(dictionary, key):
     return result
 
 
-def _get_files(pattern='*.csv'):
-    path_with_pattern = str(Path(input_data).joinpath(pattern))
-
-    print(f'finding files in {input_data} with {path_with_pattern}')
-
-    return glob(path_with_pattern)
-
-
 def mortem(input_data, output_folder, separator):
-    files = _get_files(input_data)
+    files = sorted(Path(input_data).glob('*.csv'))
 
     results = [process_file(item, output_folder, separator) for item in enumerate(files)]
 
