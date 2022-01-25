@@ -1,7 +1,6 @@
 *.csv
 *.zip
-.terraform
-terraform.*
+enhance.gdb
 file-upload-service-account.json
 service-account.json
 __pycache__
