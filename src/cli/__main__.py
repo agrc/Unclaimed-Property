@@ -7,6 +7,7 @@ Usage:
     cloud-geocode create partitions --input-csv=input-csv [--output-partitions=output-partitions --chunk-size=size --separator=sep --column-names=names...]
     cloud-geocode create jobs [--input-jobs=input-jobs --output-jobs=output-jobs]
     cloud-geocode upload [--bucket=bucket --input-folder=upload-folder]
+    cloud-geocode create enhancement-gdb [--output-gdb-folder=output-gdb]
     cloud-geocode post-mortem [--result-folder=input-folder --separator=sep --output-folder=output-folder]
     cloud-geocode post-mortem normalize [--unmatched=input-csv --output-normalized=file-path]
 
@@ -24,6 +25,7 @@ Arguments:
 --output-folder=output-folder           The place to store the post mortem issue csv's [default: ./../data/postmortem/]
 --unmatched=input-csv                   The path to the not-found.csv file generated from post-mortem or other intput [default: ./../data/postmortem/not-found.csv]
 --output-normalized=file-path           The place to store the normalized addresses [default: ./../data/postmortem/normalized.csv]
+--output-gdb=output-gdb-folder          The parent directory of the file geodatabase containing the enhancement layers [default: ./../data/enhanced]
 """
 
 import sys
@@ -35,6 +37,7 @@ from .jobs import create_jobs
 from .mortem import mortem, try_standardize_unmatched
 from .partition import create_partitions
 from .upload import upload_files
+from .enhance import create_enhancement_gdb
 
 
 def main():
@@ -52,6 +55,11 @@ def main():
 
     if args['create'] and args['jobs']:
         create_jobs(args['--input-jobs'], args['--output-jobs'])
+
+        return
+
+    if args['create'] and args['enhancement-gdb']:
+        create_enhancement_gdb(args['--output-gdb'])
 
         return
 
