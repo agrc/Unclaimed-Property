@@ -52,6 +52,10 @@ def process_file(input_data, output_folder, separator):
         escapechar="\\"
     )
 
+    data = data.query(
+        'not message == "No address candidates found with a score of 70 or better." and not message.isnull()',
+        engine='python'
+    )
     api_issues = data[~data['message'].str.contains('Expecting value', na=False)]
 
     api_issues.to_csv(
