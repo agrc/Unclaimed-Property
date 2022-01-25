@@ -8,19 +8,24 @@
     "python.linting.enabled": true,
     "cSpell.words": [
         "agrc",
+        "arcgis",
         "arcpy",
         "cidrs",
         "conda",
         "dropna",
         "geocode",
+        "geocoded",
         "geocoder",
         "geocoders",
+        "Geodatabase",
         "inplace",
+        "kubectl",
         "kubernetes",
+        "mapserv",
         "postgresql",
         "reindex",
+        "SGID",
         "tfvars",
         "webapi"
-    ],
-    "python.pythonPath": "C:\\Users\\sgourley\\AppData\\Local\\ESRI\\conda\\envs\\cloud-geocoding\\python.exe"
+    ]
 }
