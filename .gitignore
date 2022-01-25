@@ -9,3 +9,4 @@ job*.yml
 .env/
 gcs-sa.json
 secret.yml
+schema.ini
