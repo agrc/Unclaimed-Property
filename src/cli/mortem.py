@@ -32,7 +32,7 @@ def process_file(input_data, output_folder, separator):
     data.to_csv(
         output / 'all-errors.csv',
         encoding='utf-8',
-        header=header,
+        header=True,
         index=False,
         sep=',',
         quoting=csv.QUOTE_MINIMAL,
@@ -45,7 +45,7 @@ def process_file(input_data, output_folder, separator):
     unmatched.to_csv(
         output / 'not-found.csv',
         encoding='utf-8',
-        header=header,
+        header=True,
         index=False,
         sep=',',
         quoting=csv.QUOTE_MINIMAL,
@@ -61,7 +61,7 @@ def process_file(input_data, output_folder, separator):
     api_issues.to_csv(
         output / 'api-errors.csv',
         encoding='utf-8',
-        header=header,
+        header=True,
         index=False,
         sep=',',
         quoting=csv.QUOTE_MINIMAL,
@@ -72,7 +72,7 @@ def process_file(input_data, output_folder, separator):
 
     incomplete.to_csv(
         output / 'incomplete-errors.csv',
-        header=header,
+        header=True,
         encoding='utf-8',
         index=False,
         sep=',',
@@ -167,7 +167,7 @@ def try_standardize_unmatched(input_csv, output_file):
     data = data[['id', 'address', 'zone']]
 
     print('writing normalized addresses')
-    data.to_csv(output_file, index=False, sep='|', quoting=csv.QUOTE_MINIMAL, escapechar="\\")
+    data.to_csv(output_file, index=False, sep='|', header=True, quoting=csv.QUOTE_MINIMAL, escapechar="\\")
 
     print(f'\nread {total + len(extra.index)} rows')
     print('invalid addresses %.2f%%' % (100 * invalid / total))
