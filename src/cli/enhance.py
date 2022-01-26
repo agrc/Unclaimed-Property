@@ -5,7 +5,10 @@ enhance.py
 A module that handles appending information to the geocoded csv files
 """
 
-import arcpy
+try:
+    import arcpy
+except:
+    pass
 import csv
 from pathlib import Path
 from timeit import default_timer
