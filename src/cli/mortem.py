@@ -174,7 +174,7 @@ def try_standardize_unmatched(input_csv, output_file):
     invalid = invalid - data['primary_key'].count()
 
     not_found_path = Path(input_csv)
-    api_errors = not_found_path.with_name('api-errors.csv')
+    api_errors = not_found_path.with_name('api_errors.csv')
     extra = pd.DataFrame()
 
     if api_errors.exists:
