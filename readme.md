@@ -29,35 +29,35 @@ A docker container containing a python script to execute the geocoding with data
 
 1. Use the CLI to split the address data into chunks. By default they will be created in the `data\partitioned` folder.
 
-    ```sh
-    python -m cli create partitions --input-csv=../data/2022.csv --separator=\| --column-names=category --column-names=partial-id --column-names=address --column-names=zone
-    ```
+   ```sh
+   python -m cli create partitions --input-csv=../data/2022.csv --separator=\| --column-names=category --column-names=partial-id --column-names=address --column-names=zone
+   ```
 
 1. Use the CLI to upload the files to the cloud so they are accessible to the kubernetes cluster containers
 
-    ```sh
-    python -m cli upload
-    ```
+   ```sh
+   python -m cli upload
+   ```
 
 1. Use the CLI to create `yml` job files to apply to the kubernetes cluster nodes to start the jobs. By default the job specifications will be created in the `jobs` folder.
 
-    ```sh
-    python -m cli create jobs
-    ```
+   ```sh
+   python -m cli create jobs
+   ```
 
 ## Secrets
 
 1. Create a `secret.yml` file from the `secret.yml.sample` file and add the base64 key from a service worker with access to google cloud storage. The following command will put the base64 into your clipboard.
 
-    ```sh
-    base64 path/to/service-account.json | pbcopy
-    ```
+   ```sh
+   base64 path/to/service-account.json | pbcopy
+   ```
 
 1. Push this secret to the kubernetes cluster
 
-    ```sh
-    kubectl apply -f secret.yml
-    ```
+   ```sh
+   kubectl apply -f secret.yml
+   ```
 
 ## Start the job
 
@@ -71,15 +71,29 @@ kubectl apply -f job.yaml
 
 cloud logging [log viewer](https://console.cloud.google.com/logs/)
 
-```js
-resource.type="k8s_container"
-resource.labels.project_id="ut-dts-agrc-geocoding-dev"
-resource.labels.location="us-central1-a"
-resource.labels.cluster_name="cloud-geocoding"
-resource.labels.namespace_name="default"
-resource.labels.pod_name:"geocoder-job-"
-resource.labels.container_name="geocoder-client"
-```
+- python geocoding process
+
+  ```js
+  resource.type="k8s_container"
+  resource.labels.project_id="ut-dts-agrc-geocoding-dev"
+  resource.labels.location="us-central1-a"
+  resource.labels.cluster_name="cloud-geocoding"
+  resource.labels.namespace_name="default"
+  resource.labels.pod_name:"geocoder-job-"
+  resource.labels.container_name="geocoder-client"
+  ```
+
+- web api process
+
+  ```js
+  resource.type="k8s_container"
+  resource.labels.project_id="ut-dts-agrc-geocoding-dev"
+  resource.labels.location="us-central1-a"
+  resource.labels.cluster_name="cloud-geocoding"
+  resource.labels.namespace_name="default"
+  resource.labels.pod_name:"webapi-api-"
+  resource.labels.container_name="webapi-api"
+  ```
 
 kubernetes [workloads](https://console.cloud.google.com/kubernetes/workload)
 
@@ -108,6 +122,26 @@ To merge all the data back together into one `data\results\all.csv`
 ```sh
 python -m cli merge
 ```
+
+### Post mortem
+
+It is a good idea to make sure all the addresses that were not found were not caused by something else.
+
+```sh
+python -m cli post-mortem
+```
+
+This will create the following files
+
+- `all_errors.csv`: all of the unmatched addresses from the geocoded results
+- `api_errors.csv`: a subset of `all_errors.csv` where the message is not a normal api response
+- `all_errors_job.csv`: all of the unmatched addresses from the geocoded results but in a format that can be processed by the cluster.
+- `incomplete_errors.csv`: typically errors that have null parts. This should be inspected because other errors can get mixed in here
+- `not_found.csv`: all the addresses that 404'd as not found by the api. `post-mortem normalize` will run these addresses through sweeper.
+
+You can create jobs for the `postmortem` folder and upload the data to try the files again.
+
+It is recommended to run `all_errors.csv` and `post-mortem` those result. Make sure to update the job to allow for `--ignore-failures` or it will most likely fast fail. Then `post-mortem normalize` the results and run those again to be thorough.
 
 ## Maintenance
 
