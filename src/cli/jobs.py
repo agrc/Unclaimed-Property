@@ -6,7 +6,6 @@ A module that creates the container metadata for it's job
 """
 
 from pathlib import Path
-from shutil import rmtree
 from string import Template
 
 JOB_TEMPLATE = Template(
@@ -61,18 +60,14 @@ def create_jobs(input_path, output_path):
     """
     chunks = sorted(Path(input_path).glob('*.csv'))
 
+    [job.unlink() for job in Path(output_path).glob('*.yml')]
+
     for i, path in enumerate(chunks):
         print(f'writing job for {path}')
 
         jobs = Path(output_path)
 
-        if jobs.exists() and i == 0:
-            rmtree(jobs)
-
-        jobs.mkdir(parents=True, exist_ok=True)
-
-        jobs = jobs.joinpath(f'job_{i}.yml')
-        jobs.touch(exist_ok=False)
+        jobs = jobs / f'job_{path.stem}.yml'
 
         with open(jobs, 'w') as yml:
             yml.write(
@@ -80,7 +75,7 @@ def create_jobs(input_path, output_path):
                     'job_number': i,
                     'upload_bucket': 'ut-dts-agrc-geocoding-dev-source',
                     'results_bucket': 'ut-dts-agrc-geocoding-dev-result',
-                    'csv_name': f'partition_{i}.csv',
+                    'csv_name': path.name,
                     'id_field': 'id',
                     'address_field': 'address',
                     'zone_field': 'zone'
