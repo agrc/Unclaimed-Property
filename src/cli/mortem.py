@@ -139,7 +139,7 @@ def try_standardize_unmatched(input_csv, output_file):
     total = len(data.index)
 
     print('normalizing address data')
-    data['input_address'] = data['input_address'].str.replace(' +', ' ')
+    data['input_address'] = data['input_address'].str.replace(' +', ' ', regex=False)
     data['address'] = data.apply(lambda row: normalize(row['input_address']), axis=1)
 
     invalid = data['primary_key'].count()
