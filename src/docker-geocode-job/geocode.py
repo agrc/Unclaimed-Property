@@ -6,7 +6,7 @@ Cloud Geocoding
 Usage:
   geocode.py geocode <input_csv>
     (--from-bucket=bucket --output-bucket=output)
-    [--street-field=street --zone-field=zone --id-field=id --testing=test, --ignore-failure=failures]
+    [--street-field=street --zone-field=zone --id-field=id --testing=test --ignore-failure=failures]
 
 Options:
   <input_csv>                    The name of the csv inside the --from-bucket
