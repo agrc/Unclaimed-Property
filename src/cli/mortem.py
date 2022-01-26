@@ -30,9 +30,10 @@ def process_file(input_data, output_folder, separator):
     output.mkdir(exist_ok=True)
 
     data.to_csv(
-        output / 'all-errors.csv',
+        output / 'all_errors.csv',
+        mode='a',
         encoding='utf-8',
-        header=True,
+        header=header,
         index=False,
         sep=',',
         quoting=csv.QUOTE_MINIMAL,
@@ -43,9 +44,10 @@ def process_file(input_data, output_folder, separator):
         data['message'].str.contains('No address candidates found with a score of 70 or better.', na=False)]
 
     unmatched.to_csv(
-        output / 'not-found.csv',
+        output / 'not_found.csv',
+        mode='a',
         encoding='utf-8',
-        header=True,
+        header=header,
         index=False,
         sep=',',
         quoting=csv.QUOTE_MINIMAL,
@@ -59,9 +61,10 @@ def process_file(input_data, output_folder, separator):
     api_issues = data[~data['message'].str.contains('Expecting value', na=False)]
 
     api_issues.to_csv(
-        output / 'api-errors.csv',
+        output / 'api_errors.csv',
+        mode='a',
         encoding='utf-8',
-        header=True,
+        header=header,
         index=False,
         sep=',',
         quoting=csv.QUOTE_MINIMAL,
@@ -71,9 +74,10 @@ def process_file(input_data, output_folder, separator):
     incomplete = data[data['message'].str.contains('Expecting value', na=False)]
 
     incomplete.to_csv(
-        output / 'incomplete-errors.csv',
-        header=True,
+        output / 'incomplete_errors.csv',
+        mode='a',
         encoding='utf-8',
+        header=header,
         index=False,
         sep=',',
         quoting=csv.QUOTE_MINIMAL,
@@ -100,7 +104,30 @@ def _sum_key(dictionary, key):
 def mortem(input_data, output_folder, separator):
     files = sorted(Path(input_data).glob('*.csv'))
 
+    print('removing any old csv files')
+    [item.unlink() for item in Path(output_folder).glob('*.csv')]
+
     results = [process_file(item, output_folder, separator) for item in enumerate(files)]
+
+    fix_me = list(Path(output_folder).glob('all_errors.csv'))[0]
+    all_errors = pd.read_csv(fix_me, encoding='utf-8', sep=separator, index_col=False, quoting=csv.QUOTE_MINIMAL)
+    all_errors.rename(columns={'primary_key': 'id', 'input_address': 'address', 'input_zone': 'zone'}, inplace=True)
+
+    del all_errors['score']
+    del all_errors['x']
+    del all_errors['y']
+    del all_errors['message']
+
+    all_errors.to_csv(
+        Path(output_folder) / 'all_errors_job.csv',
+        mode='a',
+        encoding='utf-8',
+        header=True,
+        index=False,
+        sep='|',
+        quoting=csv.QUOTE_MINIMAL,
+        escapechar="\\"
+    )
 
     print(f'\ntotal unmatched records: {_sum_key(results, "total")}')
     print('unmatched address breakdown')
@@ -148,6 +175,7 @@ def try_standardize_unmatched(input_csv, output_file):
 
     not_found_path = Path(input_csv)
     api_errors = not_found_path.with_name('api-errors.csv')
+    extra = pd.DataFrame()
 
     if api_errors.exists:
         extra = pd.read_csv(str(api_errors), encoding='utf-8', index_col=False, quoting=csv.QUOTE_MINIMAL)
