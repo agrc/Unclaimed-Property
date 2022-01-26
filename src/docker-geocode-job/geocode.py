@@ -186,6 +186,14 @@ def execute_job(data, options):
 
                     writer.writerow((primary_key, street, zone, 0, 0, 0, response['message']))
 
+                    if total % 1000 == 0:
+                        logging.info(
+                            'Total requests: %s failure rate: %.2f%% time taken: %s', total, (100 * fail / total),
+                            format_time(perf_counter() - start)
+                        )
+
+                        start = perf_counter()
+
                     continue
 
                 match = response['result']
