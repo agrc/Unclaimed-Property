@@ -101,7 +101,7 @@ kubernetes [workloads](https://console.cloud.google.com/kubernetes/workload)
 
 ### Geocode Results
 
-Download the csv output from cloud storage and place them in `data/geocode-results`.
+Download the csv output from cloud storage and place them in `data/geocode-results`. Rename them to be compatible with a file geodatabase.
 
 ### Enhance Geodatabase
 
