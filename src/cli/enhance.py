@@ -19,11 +19,11 @@ UTM = "PROJCS['NAD_1983_UTM_Zone_12N',GEOGCS['GCS_North_American_1983',DATUM['D_
 gdb_name = 'enhance.gdb'
 
 enhancement_layers = [{
-    'table': 'political.senate_districts_2012',
+    'table': 'political.senate_districts_2022_to_2032',
     'fields': ['dist'],
     'rename': ['senate_district']
 }, {
-    'table': 'political.house_districts_2012',
+    'table': 'political.house_districts_2022_to_2032',
     'fields': ['dist'],
     'rename': ['house_district']
 }, {
