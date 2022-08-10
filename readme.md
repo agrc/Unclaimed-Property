@@ -33,6 +33,8 @@ A docker container containing a python script to execute the geocoding with data
    python -m cli create partitions --input-csv=../data/2022.csv --separator=\| --column-names=category --column-names=partial-id --column-names=address --column-names=zone
    ```
 
+   The CSV will contain 4 fields without a header row. They will be pipe delimited without quoting. They will be in the order `system-area`, `system-id`, `address`, `zip-code`. This CLI command will merge `system-area` and `system-id` into an `id` field and rename `zip-code` to `zone`.
+
 1. Use the CLI to upload the files to the cloud so they are accessible to the kubernetes cluster containers
 
    ```sh
