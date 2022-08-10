@@ -61,7 +61,7 @@ A docker container containing a python script to execute the geocoding with data
 
 ## Start the job
 
-To start the job, you mush apply the `jobs/job_*.yml` to the cluster. Run this command for each `job.yml` file that you created.
+To start the job, you must apply the `jobs/job_*.yml` to the cluster. Run this command for each `job.yml` file that you created.
 
 ```sh
 kubectl apply -f job.yaml
