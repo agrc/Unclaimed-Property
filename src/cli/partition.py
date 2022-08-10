@@ -16,7 +16,16 @@ def create_partitions(input_data, output_data, chunk_size, separator, column_nam
     """partitions a single file into multiple based on chunks
     """
     for i, partition in enumerate(
-        pd.read_csv(input_data, encoding='utf-8', sep=separator, header=None, names=column_names, index_col=False, chunksize=chunk_size, quoting=csv.QUOTE_NONE)
+        pd.read_csv(
+            input_data,
+            encoding='utf-8',
+            sep=separator,
+            header=None,
+            names=column_names,
+            index_col=False,
+            chunksize=chunk_size,
+            quoting=csv.QUOTE_NONE
+        )
     ):
         print(f'writing partition {i}')
 
@@ -30,12 +39,15 @@ def create_partitions(input_data, output_data, chunk_size, separator, column_nam
         partitioned_csv = partitioned_csv.joinpath(f'partition_{i}.csv')
         partitioned_csv.touch(exist_ok=False)
 
-        partition = partition.assign(id=partition.category + partition['partial-id'].map(str))
+        # partition = partition.assign(id=partition.category + partition['partial-id'].map(str))
         columns = ['id', 'address', 'zone']
         partition = partition.reindex(columns, axis=1)
 
         for col in columns:
-            partition[col] = partition[col].str.replace('"', '')
+            try:
+                partition[col] = partition[col].str.replace('"', '')
+            except AttributeError:
+                pass
 
-        with open(partitioned_csv, 'w') as output_file:
+        with open(partitioned_csv, 'w', encoding='utf-8') as output_file:
             partition.to_csv(output_file, header=True, index=False, sep='|', quoting=csv.QUOTE_NONE, escapechar="\\")

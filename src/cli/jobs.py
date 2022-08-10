@@ -32,8 +32,8 @@ spec:
       - name: geocoder-client
         resources:
           limits:
-            cpu: "100m"
-            memory: "150Mi"
+            cpu: "50m"
+            memory: "100Mi"
           requests:
             cpu: "50m"
             memory: "50Mi"
@@ -49,18 +49,25 @@ spec:
         args: ["/usr/local/geocode-job/geocode.py",
             "geocode", "$csv_name",
             "--from-bucket", "$upload_bucket",
-            "--output-bucket", "$results_bucket"]
+            "--output-bucket", "$results_bucket",
+            "--ignore-failure", "true"]
         # Do not restart containers after they exit
         """
 )
 
 
+def job_sort_function(path):
+    """sort the jobs by the job number
+    """
+    return int(path.stem.split('_')[1])
+
+
 def create_jobs(input_path, output_path):
     """the main method to call when the script is run
     """
-    chunks = sorted(Path(input_path).glob('*.csv'))
+    chunks = sorted(Path(input_path).glob('*.csv'), key=job_sort_function)
 
-    [job.unlink() for job in Path(output_path).glob('*.yml')]
+    _ = [job.unlink() for job in Path(output_path).glob('*.yml')]
 
     for i, path in enumerate(chunks):
         print(f'writing job for {path}')
@@ -69,7 +76,7 @@ def create_jobs(input_path, output_path):
 
         jobs = jobs / f'job_{path.stem}.yml'
 
-        with open(jobs, 'w') as yml:
+        with open(jobs, 'w', encoding='utf-8') as yml:
             yml.write(
                 JOB_TEMPLATE.substitute({
                     'job_number': i,
