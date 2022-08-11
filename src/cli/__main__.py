@@ -5,7 +5,7 @@ cloud-geocode
 
 Usage:
     cli create partitions --input-csv=input-csv [--output-partitions=output-partitions --chunk-size=size --separator=sep --column-names=names...]
-    cli create jobs [--input-jobs=input-jobs --output-jobs=output-jobs]
+    cli create jobs [--input-jobs=input-jobs --output-jobs=output-jobs --single=specific-file]
     cli upload [--bucket=bucket --input-folder=upload-folder]
     cli create enhancement-gdb [--output-gdb-folder=output-gdb]
     cli enhance [--csv-folder=geocoded-results]
@@ -16,6 +16,7 @@ Usage:
 Arguments:
 --input-jobs=input-jobs                 The parent folder path to the partitioned csv files [default: ./../data/partitioned]
 --output-jobs=output-jobs               The parent folder path for the job.yml files to be placed [default: ./../jobs/]
+--single=specific-file                  The name of a single file to be processed
 --input-csv=input-csv                   The large csv file to partition into smaller files
 --output-partitions=output-partitions   The parent folder path to place the csv partitions [default: ./../data/partitioned]
 --chunk-size=size                       The amount of records to have in each partition [default: 150000]
@@ -58,7 +59,7 @@ def main():
         return
 
     if args['create'] and args['jobs']:
-        create_jobs(args['--input-jobs'], args['--output-jobs'])
+        create_jobs(args['--input-jobs'], args['--output-jobs'], args['--single'])
 
         return
 

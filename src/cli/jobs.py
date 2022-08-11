@@ -62,10 +62,16 @@ def job_sort_function(path):
     return int(path.stem.split('_')[1])
 
 
-def create_jobs(input_path, output_path):
+def create_jobs(input_path, output_path, specific_file=None):
     """the main method to call when the script is run
     """
-    chunks = sorted(Path(input_path).glob('*.csv'), key=job_sort_function)
+    chunks = Path(input_path).glob('*.csv')
+
+    if specific_file is None:
+        chunks = sorted(chunks, key=job_sort_function)
+
+    if specific_file is not None:
+        chunks = [chunk for chunk in chunks if chunk.name.casefold() == specific_file.casefold()]
 
     _ = [job.unlink() for job in Path(output_path).glob('*.yml')]
 
@@ -73,8 +79,11 @@ def create_jobs(input_path, output_path):
         print(f'writing job for {path}')
 
         jobs = Path(output_path)
+        job_name = path.stem
+        jobs = jobs / f'job_{job_name}.yml'
 
-        jobs = jobs / f'job_{path.stem}.yml'
+        if specific_file is not None:
+            i = job_name.replace('_', '-')
 
         with open(jobs, 'w', encoding='utf-8') as yml:
             yml.write(
