@@ -6,11 +6,12 @@ cloud-geocode
 Usage:
     cli create partitions --input-csv=input-csv [--output-partitions=output-partitions --chunk-size=size --separator=sep --column-names=names...]
     cli create jobs [--input-jobs=input-jobs --output-jobs=output-jobs --single=specific-file]
-    cli upload [--bucket=bucket --input-folder=upload-folder]
+    cli upload [--bucket=bucket --input-folder=upload-folder --single=specific-file]
     cli create enhancement-gdb [--output-gdb-folder=output-gdb]
     cli enhance [--csv-folder=geocoded-results]
     cli merge [--final-folder=final-folder]
     cli post-mortem [--result-folder=input-folder --separator=sep --output-folder=output-folder]
+    cli post-mortem updating [--rematched=input-csv --already-matched-folder=results-folder]
     cli post-mortem normalize [--unmatched=input-csv --output-normalized=file-path]
 
 Arguments:
@@ -70,6 +71,9 @@ def main():
 
     if args['upload']:
         uploads = sorted(Path(args['--input-folder']).glob('*.csv'))
+
+        if args['--single']:
+            uploads = [item for item in uploads if item.name.casefold() == args['--single'].casefold()]
 
         for path in uploads:
             upload_files(str(path), args['--bucket'])
