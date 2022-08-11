@@ -19,6 +19,8 @@
         "geocoder",
         "geocoders",
         "Geodatabase",
+        "geolocators",
+        "gsutil",
         "inplace",
         "kubectl",
         "kubernetes",
