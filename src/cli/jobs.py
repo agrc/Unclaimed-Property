@@ -35,7 +35,7 @@ spec:
             cpu: "50m"
             memory: "100Mi"
           requests:
-            cpu: "50m"
+            cpu: "30m"
             memory: "50Mi"
         image: gcr.io/ut-dts-agrc-geocoding-dev/api.mapserv.utah.gov/geocode-job
         imagePullPolicy: Always
