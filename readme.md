@@ -2,7 +2,7 @@
 
 ## Create infrastructure
 
-1. Run the cloud-geocoding terraform in the gcp-terraform monorepo
+1. Run the `batch-geocoding` terraform in the gcp-terraform monorepo
 1. Make sure the [boot image](https://console.cloud.google.com/compute/images) is current.
 
 ```tf
@@ -13,7 +13,7 @@
   }
 ```
 
-1. Update `deployment.yml` with the private/internal ip address of the compute vm created above. If it is different than what is in your `deployment.yml`, run `terraform apply` again to correct the kubernetes cluster.
+1. Update `deployment.yml` from the terraform repo with the private/internal ip address of the compute vm created above. If it is different than what is in your `deployment.yml`, run `kubectl apply -f deployment.yml` again to correct the kubernetes cluster.
 
 ### Infrastructure parts
 
@@ -45,20 +45,6 @@ A docker container containing a python script to execute the geocoding with data
 
    ```sh
    python -m cli create jobs
-   ```
-
-## Secrets
-
-1. Create a `secret.yml` file from the `secret.yml.sample` file and add the base64 key from a service worker with access to google cloud storage. The following command will put the base64 into your clipboard.
-
-   ```sh
-   base64 path/to/service-account.json | pbcopy
-   ```
-
-1. Push this secret to the kubernetes cluster
-
-   ```sh
-   kubectl apply -f secret.yml
    ```
 
 ## Start the job
@@ -99,11 +85,45 @@ cloud logging [log viewer](https://console.cloud.google.com/logs/)
 
 kubernetes [workloads](https://console.cloud.google.com/kubernetes/workload)
 
-## Enhance
-
 ### Geocode Results
 
-Download the csv output from cloud storage and place them in `data/geocode-results`. Rename them to be compatible with a file geodatabase.
+Download the csv output from cloud storage and place them in `data/geocoded-results`. Rename them to be compatible with a file geodatabase. `gsutil` can be run from the root of the project to download all the files.
+
+```sh
+gsutil -m cp "gs://ut-dts-agrc-geocoding-dev-result/*.csv" data/geocoded-results
+```
+
+### Post mortem
+
+It is a good idea to make sure all the addresses that were not found were not caused by something else.
+
+```sh
+python -m cli post-mortem
+```
+
+This will create the following files
+
+- `all_errors.csv`: all of the unmatched addresses from the geocoded results
+- `api_errors.csv`: a subset of `all_errors.csv` where the message is not a normal api response
+- `all_errors_job.csv`: all of the unmatched addresses from the geocoded results but in a format that can be processed by the cluster.
+- `incomplete_errors.csv`: typically errors that have null parts. This should be inspected because other errors can get mixed in here
+- `not_found.csv`: all the addresses that 404'd as not found by the api. `post-mortem normalize` will run these addresses through sweeper.
+
+You can create jobs for the `postmortem` folder and upload the data to try the files again.
+
+It is recommended to run `all_errors_job.csv` and `post-mortem` those result. Make sure to update the job to allow for `--ignore-failures` or it will most likely fast fail.
+
+```sh
+python -m cli create jobs --input-jobs=./../data/postmortem --single=all_errors_job.csv
+```
+
+Then `post-mortem normalize` the results and run those again to be thorough.
+
+TODO: cli to create create a job for `all_errors_job.csv`
+TODO: readme to download all errors results to `postmortum/rematch.csv`
+TODO: cli postmortem rematch `postmortum/rematch.csv` results folder `data/geocoded-results`
+TODO: run postmortem normalize on `not-found`
+TODO: re-geocode, download, rematch, enhance
 
 ### Enhance Geodatabase
 
@@ -125,34 +145,24 @@ To merge all the data back together into one `data\results\all.csv`
 python -m cli merge
 ```
 
-### Post mortem
+### Create Deliverable
 
-It is a good idea to make sure all the addresses that were not found were not caused by something else.
 
-```sh
-python -m cli post-mortem
-```
-
-This will create the following files
-
-- `all_errors.csv`: all of the unmatched addresses from the geocoded results
-- `api_errors.csv`: a subset of `all_errors.csv` where the message is not a normal api response
-- `all_errors_job.csv`: all of the unmatched addresses from the geocoded results but in a format that can be processed by the cluster.
-- `incomplete_errors.csv`: typically errors that have null parts. This should be inspected because other errors can get mixed in here
-- `not_found.csv`: all the addresses that 404'd as not found by the api. `post-mortem normalize` will run these addresses through sweeper.
-
-You can create jobs for the `postmortem` folder and upload the data to try the files again.
-
-It is recommended to run `all_errors.csv` and `post-mortem` those result. Make sure to update the job to allow for `--ignore-failures` or it will most likely fast fail. Then `post-mortem normalize` the results and run those again to be thorough.
 
 ## Maintenance
 
 ### VM updates
 
 1. RDP into the machine and install the most current locators. (google drive link or gcp bucket)
+1. Create a Cloud NAT and Router to get internet access to the machine
 1. Might as well install windows updates
-1. Save a [snapshot](https://console.cloud.google.com/compute/snapshots) `cloud-geocoding-v1-0-0`
-1. Create an [image](https://console.cloud.google.com/compute/images) from the snapshot `cloud-geocoding-v1-0-0`
+1. Update the locators (There is a geolocators shortcut on the desktop to where they are)
+   - I typically compare the dates and grab the `.loc` and `.lox` from the web api machine and copy them over
+1. Save a [snapshot](https://console.cloud.google.com/compute/snapshots) `arcgis-server-geocoding-M-YYYY`
+   - Source disk is `cloud-geocoding-v1`
+   - Region `is us-central1`
+   - Delete the other snapshots besides the original
+1. Create an [image](https://console.cloud.google.com/compute/images) from the snapshot `arcgis-server-geocoding-M-YYY`
 
 ### geocoding job container
 
