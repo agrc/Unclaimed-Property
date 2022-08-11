@@ -109,13 +109,21 @@ This will create the following files
 - `incomplete_errors.csv`: typically errors that have null parts. This should be inspected because other errors can get mixed in here
 - `not_found.csv`: all the addresses that 404'd as not found by the api. `post-mortem normalize` will run these addresses through sweeper.
 
-You can create jobs for the `postmortem` folder and upload the data to try the files again.
+#### First post mortem retry
 
 It is recommended to run `all_errors_job.csv` and `post-mortem` those result. Make sure to update the job to allow for `--ignore-failures` or it will most likely fast fail.
+
+You can create a job for the `postmortem` upload the data to try the files again.
 
 ```sh
 python -m cli create jobs --input-jobs=./../data/postmortem --single=all_errors_job.csv
 ```
+
+```sh
+python -m cli upload --single=job_all_errors_job.yml
+```
+
+#### Second post mortem retry
 
 Then `post-mortem normalize` the results and run those again to be thorough.
 
