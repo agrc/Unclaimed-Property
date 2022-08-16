@@ -219,7 +219,7 @@ def enhance_data(address_csv):
 
     if not arcpy.Exists(f'{table_name}_step_2'):
         arcpy.management.SelectLayerByAttribute(
-            in_layer_or_view=f'{table_name}_step_1', selection_type='NEW_SELECTION', where_clause='message IS NULL'
+            in_layer_or_view=f'{table_name}_step_1', selection_type='NEW_SELECTION', where_clause='score>0'
         )
     else:
         print('    skipping')
