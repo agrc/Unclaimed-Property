@@ -40,6 +40,7 @@ import sys
 from pathlib import Path
 
 from docopt import docopt
+from num2words import num2words
 
 from .jobs import create_jobs
 from .mortem import mortem, rebase, try_standardize_unmatched
@@ -89,7 +90,10 @@ def main():
         rename_files = Path(args['--csv-folder']).glob('*.csv')
 
         for path in rename_files:
-            new_name = path.name.split('_')[1]
+            partition = path.stem.split("_")[1]
+            new_name = f'{partition}.csv'
+            print(f'renaming {path.stem} to {new_name}')
+
             path.rename(path.parent / new_name)
 
         return
