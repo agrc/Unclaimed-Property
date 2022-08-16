@@ -11,7 +11,7 @@ Usage:
     cli enhance [--csv-folder=geocoded-results]
     cli merge [--final-folder=final-folder]
     cli post-mortem [--result-folder=input-folder --separator=sep --output-folder=output-folder]
-    cli post-mortem rebase [--result-folder=input-folder --single=specific-file --separator=sep]
+    cli post-mortem rebase [--result-folder=input-folder --single=specific-file --separator=sep --message=message]
     cli post-mortem normalize [--unmatched=input-csv --output-normalized=file-path]
 
 Arguments:
@@ -32,6 +32,7 @@ Arguments:
 --output-gdb-folder=output-gdb          The parent directory of the file geodatabase containing the enhancement layers [default: ./../data/enhanced]
 --csv-folder=geocoded-results           The parent directory of the geocoded files to enhanced [default: ./../data/geocoded-results]
 --final-folder=final-folder             The parent directory of the enhanced csv files [default: ./../data/results]
+--message=message                       The message to be used in the rebase command [default: post mortem replaced]
 """
 
 import sys
@@ -92,7 +93,7 @@ def main():
         merge(args['--final-folder'])
 
     if args['post-mortem'] and args['rebase']:
-        rebase(args['--result-folder'], args['--single'], args['--separator'])
+        rebase(args['--result-folder'], args['--single'], args['--separator'], args['--message'])
         return
 
     if args['post-mortem'] and args['normalize']:
