@@ -10,6 +10,7 @@ Usage:
     cli create enhancement-gdb [--output-gdb-folder=output-gdb]
     cli enhance [--csv-folder=geocoded-results]
     cli merge [--final-folder=final-folder]
+    cli rename [--csv-folder=geocoded-results]
     cli post-mortem [--result-folder=input-folder --separator=sep --output-folder=output-folder]
     cli post-mortem rebase [--result-folder=input-folder --single=specific-file --separator=sep --message=message]
     cli post-mortem normalize [--unmatched=input-csv --output-normalized=file-path]
@@ -81,6 +82,15 @@ def main():
         print(f'uploading {len(uploads)} files')
         for path in uploads:
             upload_files(str(path), args['--bucket'])
+
+        return
+
+    if args['rename']:
+        rename_files = Path(args['--csv-folder']).glob('*.csv')
+
+        for path in rename_files:
+            new_name = path.name.split('_')[1]
+            path.rename(path.parent / new_name)
 
         return
 
