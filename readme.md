@@ -87,7 +87,7 @@ kubernetes [workloads](https://console.cloud.google.com/kubernetes/workload)
 
 ### Geocode Results
 
-Download the csv output from cloud storage and place them in `data/geocoded-results`. Rename them to be compatible with a file geodatabase. `gsutil` can be run from the root of the project to download all the files.
+Download the csv output from cloud storage and place them in `data/geocoded-results`. `gsutil` can be run from the root of the project to download all the files.
 
 ```sh
 gsutil -m cp "gs://ut-dts-agrc-geocoding-dev-result/*.csv" data/geocoded-results
@@ -199,35 +199,35 @@ The second post mortem round is to see if we can correct the addresses of the re
   python -m cli post-mortem
   ```
 
-TODO: cli to create create a job for `all_errors_job.csv`
-TODO: readme to download all errors results to `postmortum/rematch.csv`
-TODO: cli postmortem rematch `postmortum/rematch.csv` results folder `data/geocoded-results`
-TODO: run postmortem normalize on `not-found`
-TODO: re-geocode, download, rematch, enhance
-
 ### Enhance Geodatabase
 
 The geocode results will be enhanced from spatial data. The cli is used to create the gdb for this processing. The layers are defined in `enhance.py` and are copied from the OpenSGID.
 
-```sh
-python -m cli create enhancement-gdb
-```
+1. The geocoded results will need to be renamed to be compatible with a file geodatabase.
 
-Enhance the csv's in the `data\geocoded-results` folder. Depending on the number of enhancement layers, you will end up with a `partition_number_step_number.csv`.
+  ```sh
+  python -m cli rename
+  ```
 
-```sh
-python -m cli enhance
-```
+1. Create the enhancement geodatabase
 
-To merge all the data back together into one `data\results\all.csv`
+  ```sh
+  python -m cli create enhancement-gdb
+  ```
 
-```sh
-python -m cli merge
-```
+1. Enhance the csv's in the `data\geocoded-results` folder. Depending on the number of enhancement layers, you will end up with a `partition_number_step_number.csv`.
+
+  ```sh
+  python -m cli enhance
+  ```
+
+1. Merge all the data back together into one `data\results\all.csv`
+
+  ```sh
+  python -m cli merge
+  ```
 
 ### Create Deliverable
-
-
 
 ## Maintenance
 
