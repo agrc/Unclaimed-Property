@@ -187,10 +187,16 @@ The second post mortem round is to see if we can correct the addresses of the re
   gsutil cp "gs://ut-dts-agrc-geocoding-dev-result/*-normalized.csv" ./../data/geocoded-results
   ```
 
-1. Finally, rebase the results back into the original data with the cli
+1. Rebase the results back into the original data with the cli
 
   ```sh
   python -m cli post-mortem rebase --single="*-normalized.csv" --message="sweeper modified input address from original"
+  ```
+
+1. Finally, remove the normalized csv and run post mortem one last time to get synchronize reality
+
+  ```sh
+  python -m cli post-mortem
   ```
 
 TODO: cli to create create a job for `all_errors_job.csv`
