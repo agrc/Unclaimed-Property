@@ -109,23 +109,89 @@ This will create the following files
 - `incomplete_errors.csv`: typically errors that have null parts. This should be inspected because other errors can get mixed in here
 - `not_found.csv`: all the addresses that 404'd as not found by the api. `post-mortem normalize` will run these addresses through sweeper.
 
-#### First post mortem retry
+#### First post mortem round
 
-It is recommended to run `all_errors_job.csv` and `post-mortem` those result. Make sure to update the job to allow for `--ignore-failures` or it will most likely fast fail.
+It is recommended to run `all_errors_job.csv` and `post-mortem` those result to get a more accurate geocoding job picture. Make sure to update the job to allow for `--ignore-failures` or it will most likely fast fail.
 
-You can create a job for the `postmortem` upload the data to try the files again.
+Create the job for the `postmortem` and upload the data to geocode the error results again.
 
 ```sh
 python -m cli create jobs --input-jobs=./../data/postmortem --single=all_errors_job.csv
 ```
 
+Upload the data for the job
+
 ```sh
-python -m cli upload --single=job_all_errors_job.yml
+python -m cli upload --single=./../data/postmortem/all_errors_job.csv
 ```
 
-#### Second post mortem retry
+Apply the job in the kubernetes cluster
 
-Then `post-mortem normalize` the results and run those again to be thorough.
+```sh
+kubectl apply -f ./../jobs/job_all_errors_job.yml
+```
+
+When that job has completed you can download the results with `gsutil`
+
+```sh
+gsutil cp -n "gs://ut-dts-agrc-geocoding-dev-result/*.csv" ./../data/geocoded-results
+```
+
+Finally, rebase the results back into the original data with the cli
+
+```sh
+python -m cli post-mortem rebase --single="*-all_errors_job.csv"
+```
+
+Now, the original data is updated with this new runs results to fix any hiccups with the original geocode attempt.
+
+#### Second post mortem round
+
+The second post mortem round is to see if we can correct the addresses of the records that do not match using the sweeper project.
+
+1. We need to remove the results of the first round so they do not get processed. Delete the `*-all_errors_job.csv` from the `data/geocoded-results` folder.
+
+1. Post mortem the results to get the current state.
+
+  ```sh
+  python -m cli post-mortem
+  ```
+
+1. Try to fix the unmatched addresses with sweeper.
+
+  ```sh
+  python -m cli post-mortem normalize
+  ```
+
+1. Create a job for the normalized addresses
+
+  ```sh
+  python -m cli create jobs --input-jobs=./../data/postmortem --single=normalized.csv
+  ```
+
+1. Upload the data for the job
+
+  ```sh
+  python -m cli upload --input-folder=./../data/postmortem --single=normalized.csv
+  ```
+
+1. Apply the job in the kubernetes cluster
+
+  ```sh
+  kubectl apply -f ./../jobs/job_normalized.yml
+  ```
+
+1. When that job has completed you can download the results with `gsutil`
+
+  ```sh
+  gsutil cp -n "gs://ut-dts-agrc-geocoding-dev-result/*.csv" ./../data/geocoded-results
+  ```
+
+1. Finally, rebase the results back into the original data with the cli
+
+  ```sh
+  python -m cli post-mortem rebase --single="*-all_errors_job.csv"
+  ```
 
 TODO: cli to create create a job for `all_errors_job.csv`
 TODO: readme to download all errors results to `postmortum/rematch.csv`
