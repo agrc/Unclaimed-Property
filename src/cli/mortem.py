@@ -136,7 +136,7 @@ def mortem(input_data, output_folder, separator):
     print(f'  address not found (bad address or formatting): {_sum_key(results, "unmatchable")}')
 
 
-def rebase(input_data, specific_file, separator):
+def rebase(input_data, specific_file, separator, message):
     """yup"""
     files = list(Path(input_data).glob('*.csv'))
     all_errors = [item for item in files if item.match(specific_file)][0]
@@ -146,8 +146,11 @@ def rebase(input_data, specific_file, separator):
         all_errors, index_col='primary_key', dtype=str, encoding='utf-8', sep=separator, quoting=csv.QUOTE_MINIMAL
     )
 
-    new_data = new_data.loc[~(new_data.score == "0")]
-    new_data.message = 'post mortem replaced'
+    new_data = new_data.loc[~(new_data.score == "0")]  #: remove 0 score records
+
+    print(f'found {len(new_data.index)} records to rebase')
+
+    new_data.message = message
 
     for result in files:
         data = pd.read_csv(

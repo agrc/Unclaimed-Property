@@ -184,13 +184,13 @@ The second post mortem round is to see if we can correct the addresses of the re
 1. When that job has completed you can download the results with `gsutil`
 
   ```sh
-  gsutil cp -n "gs://ut-dts-agrc-geocoding-dev-result/*.csv" ./../data/geocoded-results
+  gsutil cp "gs://ut-dts-agrc-geocoding-dev-result/*-normalized.csv" ./../data/geocoded-results
   ```
 
 1. Finally, rebase the results back into the original data with the cli
 
   ```sh
-  python -m cli post-mortem rebase --single="*-all_errors_job.csv"
+  python -m cli post-mortem rebase --single="*-normalized.csv" --message="sweeper modified input address from original"
   ```
 
 TODO: cli to create create a job for `all_errors_job.csv`
