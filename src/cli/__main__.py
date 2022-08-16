@@ -11,7 +11,7 @@ Usage:
     cli enhance [--csv-folder=geocoded-results]
     cli merge [--final-folder=final-folder]
     cli post-mortem [--result-folder=input-folder --separator=sep --output-folder=output-folder]
-    cli post-mortem updating [--rematched=input-csv --already-matched-folder=results-folder]
+    cli post-mortem rebase [--result-folder=input-folder --single=specific-file --separator=sep]
     cli post-mortem normalize [--unmatched=input-csv --output-normalized=file-path]
 
 Arguments:
@@ -40,7 +40,7 @@ from pathlib import Path
 from docopt import docopt
 
 from .jobs import create_jobs
-from .mortem import mortem, try_standardize_unmatched
+from .mortem import mortem, rebase, try_standardize_unmatched
 from .partition import create_partitions
 from .upload import upload_files
 from .enhance import create_enhancement_gdb, enhance, merge
@@ -71,10 +71,13 @@ def main():
 
     if args['upload']:
         uploads = sorted(Path(args['--input-folder']).glob('*.csv'))
+        print(f'found {len(uploads)} files in {args["--input-folder"]}')
 
         if args['--single']:
+            print(f'searching for {args["--single"]}')
             uploads = [item for item in uploads if item.name.casefold() == args['--single'].casefold()]
 
+        print(f'uploading {len(uploads)} files')
         for path in uploads:
             upload_files(str(path), args['--bucket'])
 
@@ -88,12 +91,16 @@ def main():
     if args['merge']:
         merge(args['--final-folder'])
 
+    if args['post-mortem'] and args['rebase']:
+        rebase(args['--result-folder'], args['--single'], args['--separator'])
+        return
+
+    if args['post-mortem'] and args['normalize']:
+        try_standardize_unmatched(args['--unmatched'], args['--output-normalized'])
+
+        return
+
     if args['post-mortem']:
-        if args['normalize']:
-            try_standardize_unmatched(args['--unmatched'], args['--output-normalized'])
-
-            return
-
         mortem(args['--result-folder'], args['--output-folder'], args['--separator'])
 
         return
