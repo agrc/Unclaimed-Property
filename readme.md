@@ -227,8 +227,6 @@ The geocode results will be enhanced from spatial data. The cli is used to creat
     python -m cli merge
     ```
 
-### Create Deliverable
-
 ## Maintenance
 
 ### VM updates
