@@ -116,10 +116,7 @@ def merge(parent_folder):
         frames.append(temp)
 
     #: merge all csv's
-    merged = pd.DataFrame()
-    for frame in frames:
-        merged = merged.append(frame)
-
+    merged = pd.concat(frames)
     merged.to_csv(parent_folder / 'all.csv', sep='|', header=False, index=False, encoding='utf-8')
 
 
