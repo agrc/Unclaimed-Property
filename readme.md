@@ -5,13 +5,13 @@
 1. Run the `batch-geocoding` terraform in the gcp-terraform monorepo
 1. Make sure the [boot image](https://console.cloud.google.com/compute/images) is current.
 
-```tf
-  boot_disk {
-    initialize_params {
-      image = "arcgis-server-geocoding"
-    }
-  }
-```
+    ```tf
+      boot_disk {
+        initialize_params {
+          image = "arcgis-server-geocoding"
+        }
+      }
+    ```
 
 1. Update `deployment.yml` from the terraform repo with the private/internal ip address of the compute vm created above. If it is different than what is in your `deployment.yml`, run `kubectl apply -f deployment.yml` again to correct the kubernetes cluster.
 
@@ -29,23 +29,23 @@ A docker container containing a python script to execute the geocoding with data
 
 1. Use the CLI to split the address data into chunks. By default they will be created in the `data\partitioned` folder.
 
-   ```sh
-   python -m cli create partitions --input-csv=../data/2022.csv --separator=\| --column-names=category --column-names=partial-id --column-names=address --column-names=zone
-   ```
+    ```sh
+    python -m cli create partitions --input-csv=../data/2022.csv --separator=\| --column-names=category --column-names=partial-id --column-names=address --column-names=zone
+    ```
 
-   The CSV will contain 4 fields without a header row. They will be pipe delimited without quoting. They will be in the order `system-area`, `system-id`, `address`, `zip-code`. This CLI command will merge `system-area` and `system-id` into an `id` field and rename `zip-code` to `zone`.
+    The CSV will contain 4 fields without a header row. They will be pipe delimited without quoting. They will be in the order `system-area`, `system-id`, `address`, `zip-code`. This CLI command will merge `system-area` and `system-id` into an `id` field and rename `zip-code` to `zone`.
 
 1. Use the CLI to upload the files to the cloud so they are accessible to the kubernetes cluster containers
 
-   ```sh
-   python -m cli upload
-   ```
+    ```sh
+    python -m cli upload
+    ```
 
 1. Use the CLI to create `yml` job files to apply to the kubernetes cluster nodes to start the jobs. By default the job specifications will be created in the `jobs` folder.
 
-   ```sh
-   python -m cli create jobs
-   ```
+    ```sh
+    python -m cli create jobs
+    ```
 
 ## Start the job
 
@@ -115,27 +115,27 @@ It is recommended to run `all_errors_job.csv` and `post-mortem` those result to 
 
 1. Create the job for the `postmortem` and upload the data to geocode the error results again.
 
-  ```sh
-  python -m cli create jobs --input-jobs=./../data/postmortem --single=all_errors_job.csv
-  ```
+    ```sh
+    python -m cli create jobs --input-jobs=./../data/postmortem --single=all_errors_job.csv
+    ```
 
 1. Upload the data for the job
 
-  ```sh
-  python -m cli upload --single=./../data/postmortem/all_errors_job.csv
-  ```
+    ```sh
+    python -m cli upload --single=./../data/postmortem/all_errors_job.csv
+    ```
 
 1. Apply the job in the kubernetes cluster
 
-  ```sh
-  kubectl apply -f ./../jobs/job_all_errors_job.yml
-  ```
+    ```sh
+    kubectl apply -f ./../jobs/job_all_errors_job.yml
+    ```
 
 1. When that job has completed you can download the results with `gsutil`
 
-  ```sh
-  gsutil cp -n "gs://ut-dts-agrc-geocoding-dev-result/*-all_errors_job.csv" ./../data/geocoded-results
-  ```
+    ```sh
+    gsutil cp -n "gs://ut-dts-agrc-geocoding-dev-result/*-all_errors_job.csv" ./../data/geocoded-results
+    ```
 
 1. Finally, rebase the results back into the original data with the cli
 
@@ -153,51 +153,51 @@ The second post mortem round is to see if we can correct the addresses of the re
 
 1. Post mortem the results to get the current state.
 
-  ```sh
-  python -m cli post-mortem
-  ```
+    ```sh
+    python -m cli post-mortem
+    ```
 
 1. Try to fix the unmatched addresses with sweeper.
 
-  ```sh
-  python -m cli post-mortem normalize
-  ```
+    ```sh
+    python -m cli post-mortem normalize
+    ```
 
 1. Create a job for the normalized addresses
 
-  ```sh
-  python -m cli create jobs --input-jobs=./../data/postmortem --single=normalized.csv
-  ```
+    ```sh
+    python -m cli create jobs --input-jobs=./../data/postmortem --single=normalized.csv
+    ```
 
 1. Upload the data for the job
 
-  ```sh
-  python -m cli upload --input-folder=./../data/postmortem --single=normalized.csv
-  ```
+    ```sh
+    python -m cli upload --input-folder=./../data/postmortem --single=normalized.csv
+    ```
 
 1. Apply the job in the kubernetes cluster
 
-  ```sh
-  kubectl apply -f ./../jobs/job_normalized.yml
-  ```
+    ```sh
+    kubectl apply -f ./../jobs/job_normalized.yml
+    ```
 
 1. When that job has completed you can download the results with `gsutil`
 
-  ```sh
-  gsutil cp "gs://ut-dts-agrc-geocoding-dev-result/*-normalized.csv" ./../data/geocoded-results
-  ```
+    ```sh
+    gsutil cp "gs://ut-dts-agrc-geocoding-dev-result/*-normalized.csv" ./../data/geocoded-results
+    ```
 
 1. Rebase the results back into the original data with the cli
 
-  ```sh
-  python -m cli post-mortem rebase --single="*-normalized.csv" --message="sweeper modified input address from original"
-  ```
+    ```sh
+    python -m cli post-mortem rebase --single="*-normalized.csv" --message="sweeper modified input address from original"
+    ```
 
 1. Finally, remove the normalized csv and run post mortem one last time to get synchronize reality
 
-  ```sh
-  python -m cli post-mortem
-  ```
+    ```sh
+    python -m cli post-mortem
+    ```
 
 ### Enhance Geodatabase
 
@@ -205,27 +205,27 @@ The geocode results will be enhanced from spatial data. The cli is used to creat
 
 1. The geocoded results will need to be renamed to be compatible with a file geodatabase.
 
-  ```sh
-  python -m cli rename
-  ```
+    ```sh
+    python -m cli rename
+    ```
 
 1. Create the enhancement geodatabase
 
-  ```sh
-  python -m cli create enhancement-gdb
-  ```
+    ```sh
+    python -m cli create enhancement-gdb
+    ```
 
 1. Enhance the csv's in the `data\geocoded-results` folder. Depending on the number of enhancement layers, you will end up with a `partition_number_step_number.csv`.
 
-  ```sh
-  python -m cli enhance
-  ```
+    ```sh
+    python -m cli enhance
+    ```
 
 1. Merge all the data back together into one `data\results\all.csv`
 
-  ```sh
-  python -m cli merge
-  ```
+    ```sh
+    python -m cli merge
+    ```
 
 ### Create Deliverable
 
