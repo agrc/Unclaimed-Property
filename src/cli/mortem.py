@@ -14,6 +14,14 @@ from sweeper.address_parser import Address
 
 
 def process_file(input_data, output_folder, separator):
+    """This takes csvs in an input_data folder and groups them by error types.
+
+    - `total`: all of the unmatched addresses from the geocoded results
+    - `api_errors`: a subset of total where the message is not a normal api response
+    - `incomplete`: typically errors that have null parts.
+       This should be inspected because other errors can get mixed in here
+    - `unmatchable`: all the addresses that 404'd as not found by the api
+    """
     index, input_data = input_data
 
     header = False
@@ -22,7 +30,9 @@ def process_file(input_data, output_folder, separator):
 
     print(f'processing {input_data}')
 
-    data = pd.read_csv(input_data, encoding='utf-8', sep=separator, index_col=False, quoting=csv.QUOTE_MINIMAL)
+    data = pd.DataFrame(
+        pd.read_csv(input_data, encoding='utf-8', sep=separator, index_col=False, quoting=csv.QUOTE_MINIMAL)
+    )
 
     data = data.loc[~(data.message.isnull()), :]
     total = len(data.index)
@@ -102,21 +112,28 @@ def _sum_key(dictionary, key):
 
 
 def mortem(input_data, output_folder, separator):
+    """This takes csvs in an input_data folder and groups them by error types writing the results to csv.
+
+    - `all_errors.csv`: all of the unmatched addresses from the geocoded results
+    - `api_errors.csv`: a subset of `all_errors.csv` where the message is not a normal api response
+    - `all_errors_job.csv`: all of the unmatched addresses from the geocoded results but in a format that can be processed by the cluster.
+    - `incomplete_errors.csv`: typically errors that have null parts. This should be inspected because other errors can get mixed in here
+    - `not_found.csv`: all the addresses that 404'd as not found by the api. `post-mortem normalize` will run these addresses through sweeper
+    """
     files = sorted(Path(input_data).glob('*.csv'))
 
-    print('removing any old csv files')
-    [item.unlink() for item in Path(output_folder).glob('*.csv')]
+    print('removing any old post mortem files')
+    _ = [item.unlink() for item in Path(output_folder).glob('*.csv')]
 
     results = [process_file(item, output_folder, separator) for item in enumerate(files)]
 
     fix_me = list(Path(output_folder).glob('all_errors.csv'))[0]
-    all_errors = pd.read_csv(fix_me, encoding='utf-8', sep=separator, index_col=False, quoting=csv.QUOTE_MINIMAL)
+    all_errors = pd.DataFrame(
+        pd.read_csv(fix_me, encoding='utf-8', sep=separator, index_col=False, quoting=csv.QUOTE_MINIMAL)
+    )
     all_errors.rename(columns={'primary_key': 'id', 'input_address': 'address', 'input_zone': 'zone'}, inplace=True)
 
-    del all_errors['score']
-    del all_errors['x']
-    del all_errors['y']
-    del all_errors['message']
+    all_errors.drop(['score', 'x', 'y', 'message'], axis=1, inplace=True)
 
     all_errors.to_csv(
         Path(output_folder) / 'all_errors_job.csv',
@@ -137,13 +154,17 @@ def mortem(input_data, output_folder, separator):
 
 
 def rebase(input_data, specific_file, separator, message):
-    """yup"""
+    """This method updates the csv files in the input_data folder with any new geocodes
+    found in the specific_file. It also updates the message from the old error to a new
+    value so it can be differentiated from the others."""
     files = list(Path(input_data).glob('*.csv'))
     all_errors = [item for item in files if item.match(specific_file)][0]
     files.remove(all_errors)
 
-    new_data = pd.read_csv(
-        all_errors, index_col='primary_key', dtype=str, encoding='utf-8', sep=separator, quoting=csv.QUOTE_MINIMAL
+    new_data = pd.DataFrame(
+        pd.read_csv(
+            all_errors, index_col='primary_key', dtype=str, encoding='utf-8', sep=separator, quoting=csv.QUOTE_MINIMAL
+        )
     )
 
     new_data = new_data.loc[~(new_data.score == "0")]  #: remove 0 score records
@@ -153,14 +174,18 @@ def rebase(input_data, specific_file, separator, message):
     new_data.message = message
 
     for result in files:
-        data = pd.read_csv(
-            result, index_col='primary_key', dtype=str, encoding='utf-8', sep=separator, quoting=csv.QUOTE_MINIMAL
+        data = pd.DataFrame(
+            pd.read_csv(
+                result, index_col='primary_key', dtype=str, encoding='utf-8', sep=separator, quoting=csv.QUOTE_MINIMAL
+            )
         )
         data.update(new_data)
         data.to_csv(result, encoding='utf-8', sep=separator, quoting=csv.QUOTE_MINIMAL)
 
 
 def try_standardize_unmatched(input_csv, output_file):
+    """This method takes an input, parses it with sweeper and
+    tries to standardize the address for another geocode run"""
     total = 0
     invalid = 0
 
@@ -186,7 +211,7 @@ def try_standardize_unmatched(input_csv, output_file):
             return None
 
     print('reading unmatched records')
-    data = pd.read_csv(input_csv, encoding='utf-8', index_col=False, quoting=csv.QUOTE_MINIMAL)
+    data = pd.DataFrame(pd.read_csv(input_csv, encoding='utf-8', index_col=False, quoting=csv.QUOTE_MINIMAL))
     total = len(data.index)
 
     print('normalizing address data')
@@ -201,19 +226,15 @@ def try_standardize_unmatched(input_csv, output_file):
     api_errors = not_found_path.with_name('api_errors.csv')
     extra = pd.DataFrame()
 
-    if api_errors.exists:
-        extra = pd.read_csv(str(api_errors), encoding='utf-8', index_col=False, quoting=csv.QUOTE_MINIMAL)
+    if api_errors.exists():
+        extra = pd.DataFrame(pd.read_csv(str(api_errors), encoding='utf-8', index_col=False, quoting=csv.QUOTE_MINIMAL))
         extra.rename(columns={'input_address': 'address'}, inplace=True)
 
         print('found api errors... appending')
         data = pd.concat([data, extra])
         total += len(extra.index)
 
-    del data['score']
-    del data['x']
-    del data['y']
-    del data['message']
-    del data['input_address']
+    data.drop(['score', 'x', 'y', 'message', 'input_address'], axis=1, inplace=True)
 
     data.rename(columns={'primary_key': 'id', 'input_zone': 'zone'}, inplace=True)
     data = data[['id', 'address', 'zone']]
@@ -222,6 +243,6 @@ def try_standardize_unmatched(input_csv, output_file):
     data.to_csv(output_file, index=False, sep='|', header=True, quoting=csv.QUOTE_MINIMAL, escapechar="\\")
 
     print(f'\nread {total + len(extra.index)} rows')
-    print('invalid addresses %.2f%%' % (100 * invalid / total))
+    print(f'invalid addresses {(100 * invalid / total):%.2f%}%')
     print(f'{invalid} addresses could not be parsed')
     print(f'saving {data["id"].count()} items for retry')
