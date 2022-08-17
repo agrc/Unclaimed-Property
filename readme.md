@@ -113,35 +113,35 @@ This will create the following files
 
 It is recommended to run `all_errors_job.csv` and `post-mortem` those result to get a more accurate geocoding job picture. Make sure to update the job to allow for `--ignore-failures` or it will most likely fast fail.
 
-Create the job for the `postmortem` and upload the data to geocode the error results again.
+1. Create the job for the `postmortem` and upload the data to geocode the error results again.
 
-```sh
-python -m cli create jobs --input-jobs=./../data/postmortem --single=all_errors_job.csv
-```
+  ```sh
+  python -m cli create jobs --input-jobs=./../data/postmortem --single=all_errors_job.csv
+  ```
 
-Upload the data for the job
+1. Upload the data for the job
 
-```sh
-python -m cli upload --single=./../data/postmortem/all_errors_job.csv
-```
+  ```sh
+  python -m cli upload --single=./../data/postmortem/all_errors_job.csv
+  ```
 
-Apply the job in the kubernetes cluster
+1. Apply the job in the kubernetes cluster
 
-```sh
-kubectl apply -f ./../jobs/job_all_errors_job.yml
-```
+  ```sh
+  kubectl apply -f ./../jobs/job_all_errors_job.yml
+  ```
 
-When that job has completed you can download the results with `gsutil`
+1. When that job has completed you can download the results with `gsutil`
 
-```sh
-gsutil cp -n "gs://ut-dts-agrc-geocoding-dev-result/*-all_errors_job.csv" ./../data/geocoded-results
-```
+  ```sh
+  gsutil cp -n "gs://ut-dts-agrc-geocoding-dev-result/*-all_errors_job.csv" ./../data/geocoded-results
+  ```
 
-Finally, rebase the results back into the original data with the cli
+1. Finally, rebase the results back into the original data with the cli
 
-```sh
-python -m cli post-mortem rebase --single="*-all_errors_job.csv"
-```
+  ```sh
+  python -m cli post-mortem rebase --single="*-all_errors_job.csv"
+  ```
 
 Now, the original data is updated with this new runs results to fix any hiccups with the original geocode attempt.
 
