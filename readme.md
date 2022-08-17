@@ -90,7 +90,7 @@ kubernetes [workloads](https://console.cloud.google.com/kubernetes/workload)
 Download the csv output from cloud storage and place them in `data/geocoded-results`. `gsutil` can be run from the root of the project to download all the files.
 
 ```sh
-gsutil -m cp "gs://ut-dts-agrc-geocoding-dev-result/*.csv" data/geocoded-results
+gsutil -m cp "gs://ut-dts-agrc-geocoding-dev-result/*.csv" ./../data/geocoded-results
 ```
 
 ### Post mortem
@@ -134,7 +134,7 @@ kubectl apply -f ./../jobs/job_all_errors_job.yml
 When that job has completed you can download the results with `gsutil`
 
 ```sh
-gsutil cp -n "gs://ut-dts-agrc-geocoding-dev-result/*.csv" ./../data/geocoded-results
+gsutil cp -n "gs://ut-dts-agrc-geocoding-dev-result/*-all_errors_job.csv" ./../data/geocoded-results
 ```
 
 Finally, rebase the results back into the original data with the cli
