@@ -16,7 +16,7 @@ import pandas as pd
 
 UTM = "PROJCS['NAD_1983_UTM_Zone_12N',GEOGCS['GCS_North_American_1983',DATUM['D_North_American_1983',SPHEROID['GRS_1980',6378137.0,298.257222101]],PRIMEM['Greenwich',0.0],UNIT['Degree',0.0174532925199433]],PROJECTION['Transverse_Mercator'],PARAMETER['False_Easting',500000.0],PARAMETER['False_Northing',0.0],PARAMETER['Central_Meridian',-111.0],PARAMETER['Scale_Factor',0.9996],PARAMETER['Latitude_Of_Origin',0.0],UNIT['Meter',1.0]];-5120900 -9998100 10000;-100000 10000;-100000 10000;0.001;0.001;0.001;IsHighPrecision"
 
-gdb_name = 'enhance.gdb'
+GDB_NAME = 'enhance.gdb'
 
 enhancement_layers = [{
     'table': 'political.senate_districts_2022_to_2032',
@@ -44,21 +44,21 @@ def create_enhancement_gdb(parent_folder):
     :type parent_folder: Path
     """
     parent_folder = Path(parent_folder)
-    gdb_path = parent_folder / gdb_name
+    gdb_path = parent_folder / GDB_NAME
 
     if gdb_path.exists():
-        print(f'{gdb_name} exists. deleting and recreating with fresh data')
+        print(f'{GDB_NAME} exists. deleting and recreating with fresh data')
 
         arcpy.management.Delete(str(gdb_path))
 
     print('creating file geodatabase')
     start = default_timer()
 
-    arcpy.management.CreateFileGDB(str(parent_folder), gdb_name)
+    arcpy.management.CreateFileGDB(str(parent_folder), GDB_NAME)
 
     print(f'file geodatabase created in {default_timer() - start} seconds')
 
-    add_enhancement_layers(parent_folder / gdb_name)
+    add_enhancement_layers(parent_folder / GDB_NAME)
 
 
 def add_enhancement_layers(output_gdb):
@@ -148,10 +148,10 @@ def filter_mapping(mapping, fields, table_metadata):
                 continue
 
             field_map = mapping.getFieldMap(index)
-            outputField = field_map.outputField
-            outputField.name = table_metadata['rename'][0]
+            output_field = field_map.outputField
+            output_field.name = table_metadata['rename'][0]
 
-            field_map.outputField = outputField
+            field_map.outputField = output_field
             mapping.replaceFieldMap(index, field_map)
 
 
@@ -167,7 +167,7 @@ def enhance(parent_folder):
     print(f'enhancing {len(address_csv_files)} csv files in {parent_folder}')
 
     data = Path(__file__).parent.parent.parent / 'data'
-    workspace = (data / 'enhanced' / gdb_name).resolve()
+    workspace = (data / 'enhanced' / GDB_NAME).resolve()
 
     arcpy.env.workspace = str(workspace)
 
@@ -231,7 +231,8 @@ def enhance_data(address_csv):
     step = 2
     for identity in enhancement_layers:
         start = default_timer()
-        print('{}. enhancing data with {} from {}'.format(step, "'".join(identity['fields']), identity['table']))
+        fields = "'".join(identity['fields'])
+        print(f'{step}. enhancing data with {fields} from {identity["table"]}')
 
         enhance_table_name = identity['table'].split('.')[1]
 
@@ -291,7 +292,7 @@ def convert_to_csv(table):
         in_table=table,
         field_names=['type', 'primary_key', 'county_name', 'senate_district', 'house_district', 'census_id'],
         where_clause='message is null'
-    ) as cursor, open(destination, 'w', newline='') as result_file:
+    ) as cursor, open(destination, 'w', encoding='utf-8', newline='') as result_file:
         writer = csv.writer(result_file, delimiter='|', quoting=csv.QUOTE_MINIMAL)
 
         for row in cursor:
@@ -313,7 +314,7 @@ def remove_temp_tables(table):
         print('could not delete intermediate tables. trying one at a time')
 
     if not removed:  #: try pro < 2.9 style
-        for table in temp_tables[:-1]:
-            arcpy.management.Delete(table)
+        for item in temp_tables[:-1]:
+            arcpy.management.Delete(item)
 
     print('intermediate tables removed')
